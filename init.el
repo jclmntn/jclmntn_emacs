@@ -10,6 +10,10 @@
 ;; Outros pontos sobre o emacs em geral
 ;;;  O emacs tem um gerenciador de pacotes: M-x list-packages
 
+(prefer-coding-system 'utf-8)
+(setq coding-system-for-read 'utf-8)
+(setq coding-system-for-write 'utf-8)
+
 ;; Configurações de início
 (setq inhibit-startup-message t ; Tira a mensagem inicial
       ring-bell-function      'ignore ; Remove som no limite do arquivo
@@ -69,7 +73,6 @@
 (require 'use-package) ; Permite que um pacote seja usado e instalado, mas não quer dizer que o pacote funcione por padrão
 (setq use-package-always-ensure t)
 
-
 ;; Instalando pacotes
 ;; (use-package command-log-mode) ; Se eu quiser ver um histórico de execuções
 
@@ -100,7 +103,7 @@
  '(custom-safe-themes
    '("5f128efd37c6a87cd4ad8e8b7f2afaba425425524a68133ac0efd87291d05874" default))
  '(package-selected-packages
-   '(visual-fill-column org-bullets evil-magit magit counsel-projectile projectile undo-tree evil-collection evil general which-key rainbow-delimiters counsel compat doom-modeline ivy)))
+   '(org-roam visual-fill-column org-bullets evil-magit magit counsel-projectile projectile undo-tree evil-collection evil general which-key rainbow-delimiters counsel compat doom-modeline ivy)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -171,6 +174,11 @@
   "o"  '(:ignore t :which-key "org-mode")
   "oa"  '(org-agenda :which-key "org-agenda")
   "oc"  '(org-capture :which-key "org-capture")
+  "or"  '(:ignore t :which-key "org-roam")
+  "orl"  '(org-roam-buffer-toggle :which-key "toggle buffer")
+  "orf"  '(org-roam-node-find :which-key "find node")
+  "orc"  '(org-roam-capture :which-key "capture")
+  "orj"  '(org-roam-dailies-capture-today :which-key "capture daily")
   ":"  '(counsel-M-x :which-key "M-x") 
   "."  '(projectile-find-file :which-key "find file") 
   "/"  '(projectile-ripgrep :which-key "live grep projects") 
@@ -323,8 +331,8 @@
 	    (org-agenda-files org-agenda-files)))))
 
   (setq org-capture-templates
-	'(("t" "Ideas")
-	  ("tt" "Idea" entry (file+olp "~/Repos/Notes/Tasks.org" "Inbox")
+	'(("i" "Ideas")
+	  ("ii" "Idea" entry (file+olp "~/Repos/Notes/Tasks.org" "Inbox")
 	   "* IDEA %?\n %U\n %a\n %i" :empty-lines 1)
 
 	  ("j" "Journal Entries")
@@ -349,6 +357,11 @@
 
 (use-package visual-fill-column
   :hook (org-mode . efs/org-mode-visual-fill))
+
+(use-package org-roam
+  :config
+  (setq org-roam-directory (file-truename "~/Repos/Notes/roam"))
+  (org-roam-db-autosync-mode))
 
 ;;; Mais aparências do visual
 ;(add-hook
