@@ -103,7 +103,7 @@
  '(custom-safe-themes
    '("5f128efd37c6a87cd4ad8e8b7f2afaba425425524a68133ac0efd87291d05874" default))
  '(package-selected-packages
-   '(org-roam visual-fill-column org-bullets evil-magit magit counsel-projectile projectile undo-tree evil-collection evil general which-key rainbow-delimiters counsel compat doom-modeline ivy)))
+   '(company python-ts-mode flycheck-eglot python-mode citre catpuccin-theme org-roam visual-fill-column org-bullets evil-magit magit counsel-projectile projectile undo-tree evil-collection evil general which-key rainbow-delimiters counsel compat doom-modeline ivy)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -138,12 +138,18 @@
              )
 
 ;;; Um tema mais interessante
-(use-package doom-themes
-             :ensure t
-             :config (setq doom-themes-enable-bold t
-                           doom-themes-enable-italic t)
-             (load-theme 'doom-palenight t)
-             )
+;;(use-package doom-themes
+;;             :ensure t
+;;             :config (setq doom-themes-enable-bold t
+;;                           doom-themes-enable-italic t)
+;;             (load-theme 'doom-palenight t)
+;;             )
+(use-package catppuccin-theme
+	    :ensure t
+	    :config (setq catppuccin-flavor 'mocha)
+	    (load-theme 'catppuccin :no-confirm)
+	    )
+
 
 ;; Facilita edição de elisp
 (use-package rainbow-delimiters
@@ -177,6 +183,7 @@
   "or"  '(:ignore t :which-key "org-roam")
   "orl"  '(org-roam-buffer-toggle :which-key "toggle buffer")
   "orf"  '(org-roam-node-find :which-key "find node")
+  "ori"  '(org-roam-node-insert :which-key "insert node")
   "orc"  '(org-roam-capture :which-key "capture")
   "orj"  '(org-roam-dailies-capture-today :which-key "capture daily")
   ":"  '(counsel-M-x :which-key "M-x") 
@@ -215,7 +222,7 @@
              (evil-global-set-key 'motion "j" 'evil-next-visual-line)
              (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
-             (evil-set-initial-state 'org-agenda-mode 'normal)
+             ;(evil-set-initial-state 'org-agenda-mode 'normal)
              (evil-set-initial-state 'messages-buffer-mode 'normal)
              (evil-set-initial-state 'dashboard-mode 'normal))
 
@@ -294,8 +301,7 @@
 (use-package org
   :hook (org-mode . jclmntn/org-mode-setup)
   :config
-  (setq org-hide-emphasis-markers t
-	org-ellipsis " ▾")
+  (setq org-hide-emphasis-markers t)
 
   (setq org-agenda-start-with-log-mode t)
   (setq org-log-done 'time)
@@ -305,17 +311,19 @@
   (setq org-cite-global-bibliography '("~/Repos/Notes/lista_de_leitura.bib"))
 
   (setq org-todo-keywords
-	'((sequence "TODO(t)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)")))
+	'((sequence "TODO(t!)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)")))
 
   (setq org-refile-targets '((("Archive.org" :maxlevel . 1)
 			      ("Tasks.org" :maxlevel . 1)
 			     )))
+
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
   (setq org-todo-keyword-faces
 	'(("TODO" . "#c3e88d")
 	  ("NEXT" . "#c3e88d")
-	  ("IDEA" . "LightBlue")))
+	  ("IDEA" . "LightBlue")
+	  ("KILL" . "Red")))
 
   (setq org-agenda-custom-commands
 	'(("d" "Dashboard"
@@ -363,10 +371,25 @@
   (setq org-roam-directory (file-truename "~/Repos/Notes/roam"))
   (org-roam-db-autosync-mode))
 
-;;; Mais aparências do visual
-;(add-hook
-; 'text-mode-hook
-; 'auto-fill-mode)
-;(add-hook
-; 'text-mode-hook
-; 'olivetti-mode)
+;;; Configurando o org-babel e o python
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((python . t)))
+
+
+(setq org-confirm-babel-evaluate nil)
+
+;; LSP
+;; Não esqueça de rodar interativamente o treesit-install-language-grammar 
+(use-package python
+  :ensure t
+  :hook ((python-ts-mode . eglot-ensure)
+	 (python-ts-mode . company-mode))
+  :mode (("\\.py\\'" . python-ts-mode)))
+
+;; Autocomplete no buffer
+(use-package company
+  :ensure t
+  :config
+  (setq company-idle-delay 0.1
+	company-minimum-prefix-length 1))
