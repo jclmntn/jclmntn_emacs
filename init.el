@@ -11,8 +11,14 @@
 ;;;  O emacs tem um gerenciador de pacotes: M-x list-packages
 
 (prefer-coding-system 'utf-8)
-(setq coding-system-for-read 'utf-8)
-(setq coding-system-for-write 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+;(setq coding-system-for-read 'utf-8)
+;(setq coding-system-for-write 'utf-8)
+;(setq keyboard-coding-system 'utf-8-unix)
+;(setq terminal-coding-system 'utf-8-unix)
+;(setq buffer-file-coding-system 'utf-8-unix) 
 
 ;; Configurações de início
 (setq inhibit-startup-message t ; Tira a mensagem inicial
@@ -23,7 +29,7 @@
 
 ;; Números nas linhas
 (global-display-line-numbers-mode t)       ; Ativa globalmente
-(setq display-line-numbers-type 'relative) ; Números são relativos
+(setq display-line-numbers-type 'visual) ; Números são relativos
 (dolist (mode '(term-mode-hook             ; Para cada um desses modos, desative numeração
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
@@ -103,7 +109,7 @@
  '(custom-safe-themes
    '("5f128efd37c6a87cd4ad8e8b7f2afaba425425524a68133ac0efd87291d05874" default))
  '(package-selected-packages
-   '(company python-ts-mode flycheck-eglot python-mode citre catpuccin-theme org-roam visual-fill-column org-bullets evil-magit magit counsel-projectile projectile undo-tree evil-collection evil general which-key rainbow-delimiters counsel compat doom-modeline ivy)))
+   '(org-super-agenda company python-ts-mode flycheck-eglot python-mode citre catpuccin-theme org-roam visual-fill-column org-bullets evil-magit magit counsel-projectile projectile undo-tree evil-collection evil general which-key rainbow-delimiters counsel compat doom-modeline ivy)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -325,18 +331,18 @@
 	  ("IDEA" . "LightBlue")
 	  ("KILL" . "Red")))
 
-  (setq org-agenda-custom-commands
-	'(("d" "Dashboard"
-	   ((agenda "" ((org-deadline-warning-days 7)))
-	    (todo "NEXT"
-		  ((org-agenda-overriding-header "Next Tasks")))
-	    (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
-
-	  ; Low-effort next actions
-	  ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-	   ((org-agenda-overriding-header "Low Effort Tasks")
-	    (org-agenda-max-todos 20)
-	    (org-agenda-files org-agenda-files)))))
+;;  (setq org-agenda-custom-commands
+;;	'(("d" "Dashboard"
+;;	   ((agenda "" ((org-deadline-warning-days 7)))
+;;	    (todo "NEXT"
+;;		  ((org-agenda-overriding-header "Next Tasks")))
+;;	    (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+;;
+;;	  ; Low-effort next actions
+;;	  ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+;;	   ((org-agenda-overriding-header "Low Effort Tasks")
+;;	    (org-agenda-max-todos 20)
+;;	    (org-agenda-files org-agenda-files)))))
 
   (setq org-capture-templates
 	'(("i" "Ideas")
@@ -357,6 +363,26 @@
   :hook (org-mode . org-bullets-mode)
   :custom
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+
+(use-package org-super-agenda
+  :config
+  (setq org-super-agenda-groups
+       '(;; Each group has an implicit boolean OR operator between its selectors.
+         (:name "Today"  ; Optionally specify section name
+                :time-grid t  ; Items that appear on the time grid
+		:date today
+		:scheduled today)
+         (:name "Work"  ; Optionally specify section name
+                ;:time-grid t  ; Items that appear on the time grid
+                :tag "work")
+         (:name "Home"  ; Optionally specify section name
+                ;:time-grid t  ; Items that appear on the time grid
+                :tag "vida")
+         (:name "Study"  ; Optionally specify section name
+                ;:time-grid t  ; Items that appear on the time grid
+                :tag ("leituras" "Estudos"))
+	 )))
+
 
 (defun efs/org-mode-visual-fill ()
   (setq visual-fill-column-width 90
