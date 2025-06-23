@@ -1,27 +1,21 @@
-;;; Commentary: Algumas dicas de hotkeys do emacs
-;;; M-x = ESC-x ou ALT-x
-;;; M-x revert-buffer dá reload no arquivo
-;;; M-x eval-buffer roda as execuções do arquivo
-
-;; Algumas notas sobre o elisp
-;;;  'value é um símbolo
-;;;  "value" é uma string
-
-;; Outros pontos sobre o emacs em geral
-;;;  O emacs tem um gerenciador de pacotes: M-x list-packages
-
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
+;; Foi a única coisa que me permitiu buscar por símbolos usando o ripgrep
 (setq-default default-process-coding-system '(utf-8 . cp1252))
-;(setq coding-system-for-read 'utf-8)
-;(setq coding-system-for-write 'utf-8)
-;(setq keyboard-coding-system 'utf-8-unix)
-;(setq terminal-coding-system 'utf-8-unix)
-;(setq buffer-file-coding-system 'utf-8-unix) 
 
-;; (setq exec-path (append exec-path '("C:/msys64/mingw64/bin")))
+;; Configurações de cores no emacs compile.
+(setq ansi-color-for-compilation-mode t)
+(add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
+
+;; Adicionando MSYS2 ao path
+;; Útil quando eu não tiver acesso a variáveis de ambiente, mas posso
+;; ajustar num script que executa o runemacs.exe também
+(add-to-list 'exec-path "C:/msys64/usr/bin/")
+
+;; Isso aqui é mais elegante do que fazer vários setenv seguidos.
+(setenv "PATH" (mapconcat #'identity exec-path path-separator))
 
 ;; Configurações de início
 (setq inhibit-startup-message t ; Tira a mensagem inicial
@@ -59,9 +53,6 @@
 
 ;;;Fonte variável
 (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 140 :weight 'regular)
-
-;;; Tema pré-existente
-;(load-theme 'wombat)
 
 ;; Inicializando fontes de pacotes
 (require 'package)
@@ -104,22 +95,8 @@
              :config
              (ivy-mode 1))
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("5f128efd37c6a87cd4ad8e8b7f2afaba425425524a68133ac0efd87291d05874" default))
- '(doc-view-resolution 400)
- '(package-selected-packages
-   '(citar-denote denote-journal consult-notes denote pet citar-org-roam citar pdf-tools org-noter jinx ef-themes solarized-theme yasnippet with-editor queue dash s ts transient swiper spinner f shrink-path sesman parseclj parseedn ht emacsql magit-section nerd-icons git-commit ivy-rich goto-chg flycheck annalist doom-themes clojure-mode catppuccin-theme all-the-icons xterm-color cider org-super-agenda company python-ts-mode flycheck-eglot python-mode citre catpuccin-theme org-roam visual-fill-column org-bullets evil-magit magit counsel-projectile projectile undo-tree evil-collection evil general which-key rainbow-delimiters counsel compat doom-modeline ivy)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(setq custom-file "~/.emacs.d/emacs-custom.el")
+(load custom-file)
 
 ; Buscas mais informativas
 (use-package ivy-rich
@@ -128,13 +105,14 @@
 
 
 (use-package counsel
-             :bind (("M-x" . counsel-M-x)
-                    ("C-x b" . counsel-ibuffer)
-                    ("C-x C-f" . counsel-find-file)
-                    :map minibuffer-local-map
-                    ("C-r" . 'counsel-minibuffer-history))
-             :config
-             (setq ivy-initial-inputs-alist nil)) ; Não inicia buscas com ^
+  :bind (
+         ("M-x" . counsel-M-x)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
+  :config
+  (setq ivy-initial-inputs-alist nil)) ; Não inicia buscas com ^
 
 ;; Ícones par ao modeline
 ;; Rodar: M-x all-the-icons-install-fonts para instalar as fontes
@@ -147,24 +125,9 @@
              )
 
 ;;; Um tema mais interessante
-;;(use-package doom-themes
-;;             :ensure t
-;;             :config (setq doom-themes-enable-bold t
-;;                           doom-themes-enable-italic t)
-;;             (load-theme 'doom-palenight t)
-;;             )
-;; (use-package catppuccin-theme
-;; 	    :ensure t
-;; 	    :config (setq catppuccin-flavor 'latte)
-;; 	    (load-theme 'catppuccin :no-confirm)
-;; 	    )
-
-(use-package ef-themes
-  :config (load-theme 'ef-elea-dark :no-confirm))
-
-;; (use-package solarized-theme
-;;   :ensure t
-;;   :config (load-theme 'solarized-light t))
+(use-package modus-themes
+  :ensure
+  :config (load-theme 'modus-operandi-tinted))
 
 ;; Facilita edição de elisp
 (use-package rainbow-delimiters
@@ -186,10 +149,6 @@
                                      :keymaps '(normal insert visual emacs)
                                      :prefix "SPC"
                                      :global-prefix "C-SPC"))
-
-; Em teoria, ficaria como o Harpoon, que abriria uma lista de buffers para navegarmos.
-;(general-define-key
-;  "C-e" 'counsel-switch-buffer)
 
 (jclmntn/leader-keys
   "o"	'(:ignore t :which-key "org-mode")
@@ -282,9 +241,6 @@
   :custom
   (magit-display-buffer-action #'magit-display-buffer-same-window-except-diff-v1))
 
-;(use-package evil-magit ;; O pacote agora é parte do evil collection!
-;  :after magit)
-
 (defun jclmntn/org-font-setup ()
   ;; Replace list hyphen with dot
   (font-lock-add-keywords 'org-mode
@@ -360,6 +316,18 @@
 
   (jclmntn/org-font-setup)
   (org-super-agenda-mode)
+
+  ;; Configurando linguagem para o org-babel
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)
+     (eshell . t)
+     (R . t)))
+
+  ;; Ajustando buffers de detangle e preservando identação
+  (setq org-src-window-setup 'plain)
+  (setq org-src-preserve-indentation t)
   )
 
 (use-package org-bullets
@@ -393,33 +361,6 @@
 
 (use-package visual-fill-column
   :hook (org-mode . jclmntn/org-mode-visual-fill))
-
-;; (use-package org-roam
-;;   :config
-;;   (setq org-roam-directory (file-truename "~/Repos/Notes/roam"))
-;;   (setq org-roam-capture-templates
-;;         '(("d" "default" plain
-;;            "%?"
-;;            :target
-;;            (file+head
-;;             "%<%Y%m%d%H%M%S>-${slug}.org"
-;;             "#+title: ${title}\n")
-;;            :unnarrowed t)
-;;           ("n" "literature note" plain
-;;            "%?"
-;;            :target
-;;            (file+head
-;;             "%(expand-file-name (or citar-org-roam-subdir \"\") org-roam-directory)/${citar-citekey}.org"
-;;             "#+title: ${citar-citekey} (${citar-date}). ${note-title}.\n#+created: %U\n#+last_modified: %U\n\n")
-;;            :unnarrowed t)))
-;;   (org-roam-db-autosync-mode))
-
-;;; Configurando o org-babel e o python
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((python . t)
-   (eshell . t)
-   ))
 
 (setq org-confirm-babel-evaluate nil)
 
@@ -458,9 +399,6 @@
 (setq ediff-split-window-function 'split-window-horizontally)
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
-;; Saves desktop/session
-(desktop-save-mode 1)
-
 ;; Fuck TABS
 (setq-default indent-tabs-mode nil)
 
@@ -473,30 +411,16 @@
 ;; Manage backups
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup/")))
 
-;; Spellchecking
-;; (use-package jinx
-;;   :hook (org-mode . jinx-mode)
-;;   :bind (("M-$" . jinx-correct)
-;;        ("C-M-$" . jinx-languages)))
 
 ;; Testes com org-noter
+;; Desinstalei o pacote e reinstalei, agora tô com preguiça de arrumar
+;; porque não compila sem ajustes no windows.
+;; (use-package pdf-tools
+;;   :config
+;;   (pdf-tools-install))
+;; (use-package org-noter)
 
-(use-package pdf-tools
-  :config
-  (pdf-tools-install))
-(use-package org-noter)
-
-
-(use-package denote
-  :defer t
-  :custom
-  (denote-directory "~/documents/notes"))
-
-;; Testes com ambientes virtuais no python
-(use-package pet 
-  :config (add-hook 'python-base-mode-hook 'pet-mode -10))
-
-;; Para otimizar busca de notas nas duas bases de código
+;; Para otimizar busca de notas nas duas bases de notas
 (use-package consult-notes
   :commands (consult-notes
              consult-notes-search-in-all-notes
@@ -519,9 +443,6 @@
   ;; Denote buffers automatically renamed to have prefix + title
   (denote-rename-buffer-mode 1))
 
-;; Adicionando MSYS2 ao path
-(add-to-list 'exec-path "C:/msys64/usr/bin/")
-(setenv "PATH" (mapconcat #'identity exec-path path-separator))
 
 ;; Configurando o Denote Journal
 ;; Não se esqueça de baixar uma cópia local do denote de lá do github
@@ -583,3 +504,40 @@
 ;; Set search as ripgrep for many programs
 ;; Funciona com o citar-denote!!!
 (setq xref-search-program 'ripgrep)
+
+;; Configurando o r-ts-mode direto da fonte
+(add-to-list 'load-path "~/.emacs.d/manual-packages/r-ts-mode/")
+
+(use-package r-ts-mode
+  :ensure nil 
+  :hook ((r-ts-mode . eglot-ensure)
+         (r-ts-mode . company-mode)
+         (r-ts-mode . display-fill-column-indicator-mode))
+  :mode (("\\.r\\'" . r-ts-mode))
+  :config
+  (with-eval-after-load 'eglot
+    (add-to-list 
+    'eglot-server-programs 
+    '(r-ts-mode . ("R" "--slave" "-e" "languageserver::run()"))))
+  )
+
+(use-package ess
+   :hook ((ess-r-mode . r-ts-mode)))
+
+(use-package htmlize
+  :ensure t)
+
+
+;; Testes com org-xournalapp
+(add-to-list 'load-path "~/.emacs.d/manual-packages/org-xournalpp")
+
+(use-package org-xournalpp
+  ;; Estou usando um fork: gitlab.com/vherrmann/org-xournalpp.
+  ;; Parece atender as minhas necessidades até agora.
+  ;; Eu só uso para criar links com arquivos .xopp, porque a visualização no arquivo está praticamente impossível.
+  :ensure nil
+  ;; :hook (org-mode . org-xournalpp-mode)
+  :config
+  (setq org-xournalpp-export-dir "~/repos/notes/figs/")
+  (setq org-xournalpp-path-default "~/repos/notes/figs/")
+  (setq org-xournalpp-executable "C:/Program Files/Xournal++/bin/xournalpp.exe"))
