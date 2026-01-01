@@ -1,5 +1,4 @@
 ;; Startup Configs 
-
 (use-package emacs
   :custom
   ((custom-file "~/.emacs.d/emacs-custom.el")               ;; Define a localização do arquivo com opções customizadas
@@ -20,12 +19,21 @@
   (dolist (mode '(eshell-mode-hook dired-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-  ;; Ajustes de codificação
-  (prefer-coding-system 'utf-8)
-  (set-default-coding-systems 'utf-8)
-  (set-terminal-coding-system 'utf-8)
-  (set-keyboard-coding-system 'utf-8)
-  (setq-default default-process-coding-system '(utf-8 . cp1252))
+  (pcase system-type
+    (windows-nt
+     ;; Ajustes de codificação quando estiver usando Windows
+     (prefer-coding-system 'utf-8)
+     (set-default-coding-systems 'utf-8)
+     (set-terminal-coding-system 'utf-8)
+     (set-keyboard-coding-system 'utf-8)
+     (setq-default default-process-coding-system '(utf-8 . cp1252))
+     ;; Tooling no Windows
+     (add-to-list 'exec-path "C:/Users/jose/Portable/msys64/usr/bin/")
+     (add-to-list 'exec-path "C:/Users/jose/Portable/fd")
+     (add-to-list 'exec-path "C:/Users/jose/Portable/rg")
+     (add-to-list 'exec-path "~/Portable/Git/bin")
+     (add-to-list 'exec-path "~/Repos")
+     (setenv "PATH" (mapconcat #'identity exec-path path-separator))))
 
   ;; Configurações de cores no compile-mode
   (setq ansi-color-for-compilation-mode t)
@@ -36,15 +44,6 @@
   ((ediff-split-window-function 'split-window-horizontally)
    (ediff-window-setup-function 'ediff-setup-windows-plain)))
 
-;; Tooling
-(add-to-list 'exec-path "C:/Users/jose/Portable/msys64/usr/bin/")
-(add-to-list 'exec-path "C:/Users/jose/Portable/fd")
-(add-to-list 'exec-path "C:/Users/jose/Portable/rg")
-(add-to-list 'exec-path "~/Portable/Git/bin")
-(add-to-list 'exec-path "~/Repos")
-(setenv "PATH" (mapconcat #'identity exec-path path-separator))
-
-
 ;; Adiciona o MELPA à lista de pacotes possíveis
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
@@ -53,9 +52,9 @@
 (load-theme 'modus-operandi)
 
 ;; Fontes
-(set-face-attribute 'default nil :font "Fira Code Retina" :height 140)
-(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height 140)
-;; (set-face-attribute 'variable-pitch nil :font "Cantarell" :height 140 :weight 'regular)
+(set-face-attribute 'default nil :font "Noto Sans Mono" :height 140)
+(set-face-attribute 'fixed-pitch nil :font "Noto Sans Mono" :height 140)
+(set-face-attribute 'variable-pitch nil :font "Cantarell" :height 140 :weight 'regular)
 
 ;; Remove elementos visuais
 (scroll-bar-mode -1)
@@ -73,20 +72,37 @@
 (use-package rainbow-delimiters
              :hook (prog-mode . rainbow-delimiters-mode))
 
-
-
 ;; Configura o evil-mode e o evil-collection.
 (use-package evil
   :init
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
+  (setq evil-want-C-i-jump t)
   :ensure t
   :config
   (evil-mode 1)
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+  (evil-set-undo-system 'undo-redo)
   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   (define-key evil-normal-state-map (kbd "C-.") nil)
-  (evil-set-undo-system 'undo-redo))
+  (setq assocl-mark-set '(("À" . ?A) ("È" . ?E) ("Ì" . ?I) ("Ò" . ?O) ("Ù" . ?U) ("à" . ?a)
+                          ("è" . ?e) ("ò" . ?o) ("ù" . ?u) ("U" . ?V) ("u" . ?v) ("?" . ?N)
+                          ("?" . ?n) ("?" . ?W) ("?" . ?w) ("?" . ?Y) ("?" . ?y)))
+  (setq assocl-line-set '(("Á" . ?A) ("É" . ?E) ("Í" . ?I) ("Ó" . ?O) ("Ú" . ?U) ("Ý" . ?y)
+                          ("á" . ?a) ("é" . ?e) ("í" . ?i) ("ó" . ?o) ("ú" . ?u) ("ý" . ?y)
+                          ("N" . ?N) ("n" . ?n) ("U" . ?V) ("u" . ?v) ("?" . ?W) ("?" . ?w)))
+  (setq assocl-reg-set '(("Ä" . ?A) ("Ë" . ?E) ("Ï" . ?O) ("Ö" . ?U) ("Ü" . ?U) ("ä" . ?a)
+                         ("ë" . ?e) ("ï" . ?i) ("ö" . ?o) ("ü" . ?u) ("ÿ" . ?y) ("Ÿ" . ?Y)
+                         ("Ḧ" . ?H) ("ḧ" . ?h) ("Ẅ" . ?W) ("ẅ" . ?w) ("ẗ" . ?t)))
+  (seq-mapn
+   #'(lambda (item function)
+       (define-key
+        evil-normal-state-map (kbd (car item))
+        (lambda () (interactive) (function (cdr item)))))
+   assocl-mark-set
+   '(evil-goto-mark evil-goto-mark-line evil-use-register)))
 
 (use-package evil-collection
   :after evil
@@ -129,7 +145,8 @@
   (vertico-cycle t)
   :init (vertico-mode))
 
-(use-package vertico-grid)
+(use-package vertico-grid
+  :ensure nil)
 
 (use-package marginalia
   :after vertico
@@ -166,7 +183,19 @@
          ("C-." . embark-act)
          ("C-h B" . embark-bindings))
   :custom
-  (prefix-help-command #'embark-prefix-help-command))
+  ((prefix-help-command #'embark-prefix-help-command))
+  :config
+  (keymap-set jinx-repeat-map "RET" 'jinx-correct)
+  (embark-define-overlay-target jinx category (eq %p 'jinx-overlay))
+  (add-to-list 'embark-target-finders 'embark-target-jinx-at-point)
+  (add-to-list 'embark-keymap-alist '(jinx jinx-repeat-map embark-general-map))
+  (add-to-list 'embark-repeat-actions #'jinx-next)
+  (add-to-list 'embark-repeat-actions #'jinx-previous)
+  (add-to-list 'embark-target-injection-hooks (list #'jinx-correct #'embark--ignore-target)))
+
+(use-package embark-consult
+  :ensure t
+  :hook (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package wgrep
   :ensure t)
@@ -194,7 +223,7 @@
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :font "Noto Sans Mono" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
@@ -219,7 +248,7 @@
   :hook (org-mode . jclmntn/org-mode-setup)
   :custom 
     ((org-todo-keywords
-        '((sequence "TODO(t!)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)")))
+        '("TODO(t!)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)"))
     (org-todo-keyword-faces
 	'(("TODO" . "#c3e88d")
 	  ("NEXT" . "#c3e88d")
@@ -232,10 +261,10 @@
     (org-log-into-drawer t)
     (org-log-done 'time)
     (org-agenda-window-setup 'only-window)
-    (org-agenda-restore-windows-after-quit t))
+    (org-agenda-restore-windows-after-quit t)
     (org-src-window-setup 'plain)
     (org-src-preserve-indentation t)
-    (org-confirm-babel-evaluate nil)
+    (org-confirm-babel-evaluate nil))
     :config
     (jclmntn/org-font-setup)
     (org-babel-do-load-languages
@@ -250,13 +279,13 @@
   :custom
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
-(defun jclmntn/org-mode-visual-fill ()
-  (setq visual-fill-column-width 120
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
+;; (defun jclmntn/org-mode-visual-fill ()
+;;   (setq visual-fill-column-width 120
+;;         visual-fill-column-center-text t)
+;;   (visual-fill-column-mode 1))
 
-(use-package visual-fill-column
-  :hook (org-mode . jclmntn/org-mode-visual-fill))
+;; (use-package visual-fill-column
+;;   :hook (org-mode . jclmntn/org-mode-visual-fill))
 
 
 ;; Personal Knowledge Management
@@ -324,15 +353,47 @@
   :ensure t)
 
 ;; Para trabalhar com o Xournal
-(add-to-list 'load-path "~/.emacs.d/manual-packages/org-xournalpp")
+;; (add-to-list 'load-path "~/.emacs.d/manual-packages/org-xournalpp")
 
-(use-package org-xournalpp
-  ;; Estou usando um fork: gitlab.com/vherrmann/org-xournalpp.
-  ;; Parece atender as minhas necessidades até agora.
-  ;; Eu só uso para criar links com arquivos .xopp, porque a visualização no arquivo está praticamente impossível.
+;; (use-package org-xournalpp
+;;   ;; Estou usando um fork: gitlab.com/vherrmann/org-xournalpp.
+;;   ;; Parece atender as minhas necessidades até agora.
+;;   ;; Eu só uso para criar links com arquivos .xopp, porque a visualização no arquivo está praticamente impossível.
+;;   :ensure nil
+;;   ;; :hook (org-mode . org-xournalpp-mode)
+;;   :config
+;;   (setq org-xournalpp-export-dir "~/repos/notes/figs/")
+;;   (setq org-xournalpp-path-default "~/repos/notes/figs/")
+;;   (setq org-xournalpp-executable "C:/Program Files/Xournal++/bin/xournalpp.exe"))
+
+;; Spellchecking
+(pcase
+    system-type
+  (gnu/linux
+   (eshell-command "sudo dnf install enchant2-devel pkgconf-pkg-config" t)
+   (use-package jinx
+     :hook (emacs-startup . global-jinx-mode)
+     :bind (("M-$" . jinx-correct)
+            ("C-M-$" . jinx-language))
+     :custom (jinx-languages "pt_BR" "en_US"))))
+
+;; Gestão de citações
+(use-package ebib
+  :custom ((ebib-default-directory "~/Repos/Notes/bib/")))
+
+(use-package biblio)
+
+(use-package biblio-openlibrary
+  :vc (:url "https://github.com/fabcontigiani/biblio-openlibrary.git")
+  :after biblio)
+
+(use-package ebib-biblio
   :ensure nil
-  ;; :hook (org-mode . org-xournalpp-mode)
-  :config
-  (setq org-xournalpp-export-dir "~/repos/notes/figs/")
-  (setq org-xournalpp-path-default "~/repos/notes/figs/")
-  (setq org-xournalpp-executable "C:/Program Files/Xournal++/bin/xournalpp.exe"))
+  :after (ebib biblio)
+  :bind (:map ebib-index-mode-map
+              ("B" . ebib-biblio-import-doi)
+              :map biblio-selection-mode-map
+              ("e" . ebib-biblio-selection-import)))
+
+;; Exportações com Pandoc
+(use-package ox-pandoc)
