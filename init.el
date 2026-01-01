@@ -367,15 +367,12 @@
 ;;   (setq org-xournalpp-executable "C:/Program Files/Xournal++/bin/xournalpp.exe"))
 
 ;; Spellchecking
-(pcase
-    system-type
-  (gnu/linux
-   (eshell-command "sudo dnf install enchant2-devel pkgconf-pkg-config" t)
-   (use-package jinx
-     :hook (emacs-startup . global-jinx-mode)
-     :bind (("M-$" . jinx-correct)
-            ("C-M-$" . jinx-language))
-     :custom (jinx-languages "pt_BR" "en_US"))))
+(use-package jinx
+    :if (eq system-type 'gnu/linux)
+    :hook (emacs-startup . global-jinx-mode)
+    :bind (("M-$" . jinx-correct)
+        ("C-M-$" . jinx-language))
+    :custom (jinx-languages "pt_BR" "en_US"))
 
 ;; Gestão de citações
 (use-package ebib
