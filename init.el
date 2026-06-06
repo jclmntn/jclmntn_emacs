@@ -189,12 +189,14 @@
   :ensure t
   :bind (
          ("C-." . embark-act)
-         ("C-h B" . embark-bindings))
+         ("M-." . embark-dwim)
+         ("C-h b" . embark-bindings))
   :custom
   ((prefix-help-command #'embark-prefix-help-command))
   :config
   (keymap-set jinx-repeat-map "RET" 'jinx-correct)
   (embark-define-overlay-target jinx category (eq %p 'jinx-overlay))
+  (add-to-list 'embark-default-action-overrides '(jinx . jinx-correct))
   (add-to-list 'embark-target-finders 'embark-target-jinx-at-point)
   (add-to-list 'embark-keymap-alist '(jinx jinx-repeat-map embark-general-map))
   (add-to-list 'embark-repeat-actions #'jinx-next)
