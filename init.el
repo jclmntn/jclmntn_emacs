@@ -163,7 +163,15 @@
 
 (use-package evil-collection
   :after evil
-  :config (evil-collection-init))
+  :config
+  (evil-collection-init)
+  (evil-collection-eat-setup))
+
+;; Emacs EAT
+(use-package eat
+  :ensure t
+  :config (eat-eshell-mode))
+
 ;; Árvore de undo
 (use-package vundo)
 
