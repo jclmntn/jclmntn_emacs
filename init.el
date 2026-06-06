@@ -214,6 +214,8 @@
   :ensure t
   :custom
   (corfu-cycle t)
+  (corfu-auto-prefix 1)
+  (corfu-auto t)
   :init
   (global-corfu-mode))
 
