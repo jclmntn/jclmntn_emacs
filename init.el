@@ -671,3 +671,60 @@
               :map biblio-selection-mode-map
               ("e" . ebib-biblio-selection-import)))
 
+;; EJC-SQL
+(defun jclmntn/ejc-maybe-add-limit (args)
+  "Inject LIMIT 200 into SELECT queries that do not already specify a limit."
+  (let* ((sql (car args))
+         (upper (when sql (upcase (string-trim sql)))))
+    (if (and upper
+             (or (string-match-p "\\`SELECT\\b" upper)
+                 (string-match-p "\\`WITH\\b" upper))
+             (not (string-match-p "\\bLIMIT\\b" upper)))
+        (cons (concat (string-trim-right sql) "\nLIMIT 200") (cdr args))
+      args)))
+
+(defun jclmntn/ejc-sql-connected-hook ()
+  (ejc-set-fetch-size 99)         ; Limit for the number of records to output.
+  (ejc-set-max-rows 99)           ; Limit for the number of records in ResultSet.
+  (ejc-set-show-too-many-rows-message t) ; Set output 'Too many rows' message.
+  (ejc-set-column-width-limit nil) ; Limit for outputing the number of chars per column.
+  (ejc-set-use-unicode t)         ; Use unicode symbols for grid borders.
+  )
+
+(use-package ejc-sql
+  :ensure t
+  :hook (ejc-sql-connected . jclmntn/ejc-sql-connected-hook)
+  :custom
+  (ejc-nrepl-timeout nil)
+  (ejc-show-result-bottom t)
+  :config
+  (setq nrepl-sync-request-timeout nil)
+  (require 'ejc-completion-common)
+  (advice-add 'ejc-eval-user-sql :filter-args #'jclmntn/ejc-maybe-add-limit)
+  (ejc-create-connection
+   "BigQuery"
+   :dependencies [[com.simba.googlebigquery/googlebigquery-jdbc42 "1.6.3.1004"]
+                  [com.google.cloud/google-cloud-bigquerystorage "3.9.3"]
+                  [com.google.apis/google-api-services-bigquery "v2-rev20240919-2.0.0"]
+                  [com.google.auth/google-auth-library-oauth2-http "1.28.0"]]
+   :classname "com.simba.googlebigquery.jdbc.Driver"
+   :connection-uri (concat "jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443"
+                           ";ProjectId=azos-data-analytics"
+                           ";OAuthType=0"
+                           ";OAuthServiceAcctEmail=azos-feature-store@azos-data-analytics.iam.gserviceaccount.com"
+                           ";OAuthPvtKeyPath=" (expand-file-name "~/.config/gcloud/feature-store.json")))
+
+    (let* ((auth (car (auth-source-search :host "postgres-dis")))
+         (user (plist-get auth :user))
+         (subname (plist-get auth :subname))
+         (password (let ((secret (plist-get auth :secret)))
+                     (if (functionp secret) (funcall secret) secret))))
+    (ejc-create-connection
+     "PostgreSQLDis"
+     :dependencies [[org.postgresql/postgresql "42.7.3"]]
+     :classpath (concat "~/.m2/repository/org.postgresql/postgresql/42.7.3/"
+                        "postgresql-42.7.3.jar")
+     :subprotocol "postgresql"
+     :subname subname
+     :user user
+     :password password)))
