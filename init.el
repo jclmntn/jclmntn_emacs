@@ -664,6 +664,7 @@
               #'hl-todo-search-and-highlight t))
 
 ;; Spellchecking
+;; Precisa do Enchant-2 instalado. Se eu estiver usando o aspell como dicionário, lembrar de instalar o enchant2-aspell.
 (use-package jinx
     :if (eq system-type 'gnu/linux)
     :hook (emacs-startup . global-jinx-mode)
