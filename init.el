@@ -130,6 +130,18 @@
              :hook (prog-mode . rainbow-delimiters-mode))
 
 ;; Configura o evil-mode e o evil-collection.
+;; Tornando marcas grandes novamente
+(defun jclmntn/my-bind-layout-marks (alist evil-fn prefix)
+  (dolist (item alist)
+    (let* ((key (car item))
+           (val (cdr item))
+           (sym-name (format "my-layout-%s-%c" prefix val))
+           (sym (intern sym-name)))
+      (defalias sym `(lambda ()
+                      (interactive)
+                      (funcall ',evil-fn ,val)))
+      (define-key evil-normal-state-map (kbd key) sym))))
+
 (use-package evil
   :init
   (setq evil-want-integration t)
@@ -145,22 +157,18 @@
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   (define-key evil-normal-state-map (kbd "C-.") nil)
   (define-key evil-normal-state-map (kbd "M-.") nil)
-  (setq assocl-mark-set '(("À" . ?A) ("È" . ?E) ("Ì" . ?I) ("Ò" . ?O) ("Ù" . ?U) ("à" . ?a)
-                          ("è" . ?e) ("ò" . ?o) ("ù" . ?u) ("U" . ?V) ("u" . ?v) ("?" . ?N)
+  (setq alist-mark-set '(("À" . ?A) ("È" . ?E) ("Ì" . ?I) ("Ò" . ?O) ("Ù" . ?U) ("à" . ?a)
+                          ("è" . ?e) ("ò" . ?o) ("ù" . ?u) ("Ǘ" . ?V) ("ǘ" . ?v) ("?" . ?N)
                           ("?" . ?n) ("?" . ?W) ("?" . ?w) ("?" . ?Y) ("?" . ?y)))
-  (setq assocl-line-set '(("Á" . ?A) ("É" . ?E) ("Í" . ?I) ("Ó" . ?O) ("Ú" . ?U) ("Ý" . ?y)
+  (setq alist-line-set '(("Á" . ?A) ("É" . ?E) ("Í" . ?I) ("Ó" . ?O) ("Ú" . ?U) ("Ý" . ?y)
                           ("á" . ?a) ("é" . ?e) ("í" . ?i) ("ó" . ?o) ("ú" . ?u) ("ý" . ?y)
-                          ("N" . ?N) ("n" . ?n) ("U" . ?V) ("u" . ?v) ("?" . ?W) ("?" . ?w)))
-  (setq assocl-reg-set '(("Ä" . ?A) ("Ë" . ?E) ("Ï" . ?O) ("Ö" . ?U) ("Ü" . ?U) ("ä" . ?a)
+                          ("N" . ?N) ("n" . ?n) ("Ǘ" . ?V) ("ǘ" . ?v) ("Ẃ" . ?W) ("ẃ" . ?w)))
+  (setq alist-reg-set '(("Ä" . ?A) ("Ë" . ?E) ("Ï" . ?O) ("Ö" . ?U) ("Ü" . ?U) ("ä" . ?a)
                          ("ë" . ?e) ("ï" . ?i) ("ö" . ?o) ("ü" . ?u) ("ÿ" . ?y) ("Ÿ" . ?Y)
                          ("Ḧ" . ?H) ("ḧ" . ?h) ("Ẅ" . ?W) ("ẅ" . ?w) ("ẗ" . ?t)))
-  (seq-mapn
-   #'(lambda (item function)
-       (define-key
-        evil-normal-state-map (kbd (car item))
-        (lambda () (interactive) (function (cdr item)))))
-   assocl-mark-set
-   '(evil-goto-mark evil-goto-mark-line evil-use-register)))
+  (jclmntn/my-bind-layout-marks alist-mark-set #'evil-goto-mark "mark")
+  (jclmntn/my-bind-layout-marks alist-line-set #'evil-goto-line "line")
+  (jclmntn/my-bind-layout-marks alist-reg-set #'evil-use-register "reg"))
 
 (use-package evil-collection
   :after evil
