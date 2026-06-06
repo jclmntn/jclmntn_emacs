@@ -391,56 +391,56 @@
   (org-babel-after-execute . jclmntn/babel-ansi)
   :ensure t
   :custom 
-    ((org-todo-keywords
-        '((sequence "TODO(t!)" "PROJ(j)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)")))
-     (org-todo-keyword-faces
-      '(
-        ("PROJ" . "Blue")
-        ("TODO" . "#c3e88d")
-        ("NEXT" . "#c3e88d")
-        ("IDEA" . "LightBlue")
-        ("KILL" . "Red")))
-    (org-capture-templates
-     '(("i" "Idea" entry
-        (file+olp "~/Repos/Notes/Tasks.org" "Caixa de Entrada") 
-	"* IDEA %?\n%U\n %a\n %i"
-        :empty-lines 1)
-       ("l" "Log" entry
-        (file+olp denote-journal-path-to-new-or-existing-entry "Logs")
-        "* %U %?\n%i\n%a"
-          :kill-buffer t
-          :empty-lines 1)))
-    (org-agenda-files '("~/Repos/Notes/Tasks.org"))
-    (org-log-into-drawer t)
-    (org-log-done 'time)
-    (org-agenda-window-setup 'only-window)
-    (org-agenda-restore-windows-after-quit t)
-    (org-src-window-setup 'plain)
-    (org-src-preserve-indentation t)
-    (org-confirm-babel-evaluate nil)
-    (org-plantuml-jar-path "~/.config/plantuml/plantuml-mit-1.2025.9.jar")
-    (org-latex-src-block-backend 'engraved)
-    (org-latex-pdf-process
-        '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-            "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-            "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
-    (org-cite-csl-link-cites nil)
-    (org-cite-csl-nocitelinks-backends '(ascii md gfm))
-    (org-refile-targets '(("~/Repos/Notes/Tasks.org" :maxlevel . 3))))
-    :config
-    (add-to-list 'org-src-lang-modes '("planuml" . plantuml))
-    (jclmntn/org-font-setup)
-    (org-babel-do-load-languages
-    'org-babel-load-languages
+  ((org-todo-keywords
+    '((sequence "TODO(t!)" "PROJ(j)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)")))
+   (org-todo-keyword-faces
     '(
-      (emacs-lisp . t)
-      (python . t)
-      (plantuml . t)
-      (eshell . t)))
-    (defun org--get-display-dpi ()
-        "Hardcode display DPI to bypass PGTK/Wayland arithmetic overflow bug."
-        200.0)
-    ) 
+      ("PROJ" . "Blue")
+      ("TODO" . "#c3e88d")
+      ("NEXT" . "#c3e88d")
+      ("IDEA" . "LightBlue")
+      ("KILL" . "Red")))
+   (org-capture-templates
+    '(("i" "Idea" entry
+       (file+olp "~/Repos/Notes/Tasks.org" "Caixa de Entrada") 
+       "* IDEA %?\n%U\n %a\n %i"
+       :empty-lines 1)
+      ("l" "Log" entry
+       (file+olp denote-journal-path-to-new-or-existing-entry "Logs")
+       "* %U %?\n%i\n%a"
+       :kill-buffer t
+       :empty-lines 1)))
+   (org-agenda-files '("~/Repos/Notes/Tasks.org"))
+   (org-log-into-drawer t)
+   (org-log-done 'time)
+   (org-agenda-window-setup 'only-window)
+   (org-agenda-restore-windows-after-quit t)
+   (org-src-window-setup 'plain)
+   (org-src-preserve-indentation t)
+   (org-confirm-babel-evaluate nil)
+   (org-plantuml-jar-path "~/.config/plantuml/plantuml-mit-1.2025.9.jar")
+   (org-latex-src-block-backend 'engraved)
+   (org-latex-pdf-process
+    '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+      "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+      "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+   (org-cite-csl-link-cites nil)
+   (org-cite-csl-nocitelinks-backends '(ascii md gfm))
+   (org-refile-targets '(("~/Repos/Notes/Tasks.org" :maxlevel . 3)))
+   (org-imenu-depth 3))
+  :config
+  (add-to-list 'org-src-lang-modes '("planuml" . plantuml))
+  (jclmntn/org-font-setup)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '(
+     (emacs-lisp . t)
+     (python . t)
+     (plantuml . t)
+     (eshell . t)))
+  (defun org--get-display-dpi ()
+    "Hardcode display DPI to bypass PGTK/Wayland arithmetic overflow bug."
+    200.0)) 
 
 (use-package plantuml-mode
   :custom
