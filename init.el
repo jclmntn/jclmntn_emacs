@@ -276,14 +276,50 @@
   (corfu-auto-prefix 1)
   (corfu-auto t)
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  (advice-add 'python-shell-completion-at-point :around
+            (lambda (fun &optional arg)
+              (cape-wrap-noninterruptible (lambda () (funcall fun arg))))))
+
+(use-package cape
+  :ensure t)
+
+;; to integrate yasnippet-capf with eglot completion
+;; https://github.com/minad/corfu/wiki#making-a-cape-super-capf-for-eglot
+
+;; Configuração do Eglot
+(defun jclmntn/eglot-capf-with-yasnippet ()
+  (setq-local completion-at-point-functions
+              (list 
+	       (cape-capf-super
+		#'eglot-completion-at-point
+		#'yasnippet-capf))))
+
+(setq eglot-python/pyright-uvtool-command
+      '("uv" "tool" "run" "--from" "pyright" "pyright-langserver" "--" "--stdio"))
+
+(use-package eglot
+  :hook (eglot-managed-mode . jclmntn/eglot-capf-with-yasnippet)
+  :config
+  (add-to-list 'eglot-server-programs `(python-mode . ,eglot-python/pyright-uvtool-command))
+  (add-to-list 'eglot-server-programs `(python-ts-mode . ,eglot-python/pyright-uvtool-command)))
+
+(use-package consult-eglot)
+
+(use-package eldoc-box
+  :hook (eglot-managed-mode . eldoc-box-hover-at-point-mode))
+
+(use-package flymake-ruff
+  :ensure t
+  :hook (eglot-managed-mode . flymake-ruff-load))
+
 
 ;; Elementos visuais do org-mode
 (defun jclmntn/org-font-setup ()
   ;; Replace list hyphen with dot
-  (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([-]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+  ;; (font-lock-add-keywords 'org-mode
+  ;;                         '(("^ *\\([-]\\) "
+  ;;                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\U+2022"))))))
 
   ;; Set faces for headig levels
   (dolist (face '((org-level-1 . 1.2)
