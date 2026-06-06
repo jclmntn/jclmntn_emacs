@@ -117,6 +117,8 @@
 (use-package evil-collection
   :after evil
   :config (evil-collection-init))
+;; Árvore de undo
+(use-package vundo)
 
 ;; Definição de leader keys
 (use-package general
