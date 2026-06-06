@@ -379,12 +379,14 @@
   :ensure t
   :custom 
     ((org-todo-keywords
-        '("TODO(t!)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)"))
-    (org-todo-keyword-faces
-	'(("TODO" . "#c3e88d")
-	  ("NEXT" . "#c3e88d")
-	  ("IDEA" . "LightBlue")
-	  ("KILL" . "Red")))
+        '((sequence "TODO(t!)" "PROJ(j)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)")))
+     (org-todo-keyword-faces
+      '(
+        ("PROJ" . "Blue")
+        ("TODO" . "#c3e88d")
+        ("NEXT" . "#c3e88d")
+        ("IDEA" . "LightBlue")
+        ("KILL" . "Red")))
     (org-capture-templates
      '(("i" "Idea" entry
         (file+olp "~/Repos/Notes/Tasks.org" "Caixa de Entrada") 
