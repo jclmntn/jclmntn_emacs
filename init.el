@@ -620,7 +620,6 @@
 
 (use-package engrave-faces)
 
-;;(use-package pandoc-mode)
 (use-package ox-pandoc)
 
 (use-package project
@@ -645,16 +644,6 @@
               #'hl-todo-search-and-highlight t)
     (add-hook 'magit-revision-wash-message-hook
               #'hl-todo-search-and-highlight t))
-
-
-;; Para buildar o Blog
-(use-package htmlize
-  :ensure t)
-
-;; Para trabalhar com o Xournal
-;; (add-to-list 'load-path "~/.emacs.d/manual-packages/org-xournalpp")
-
-
 
 ;; Spellchecking
 (use-package jinx
@@ -682,5 +671,3 @@
               :map biblio-selection-mode-map
               ("e" . ebib-biblio-selection-import)))
 
-;; Exportações com Pandoc
-(use-package ox-pandoc)
