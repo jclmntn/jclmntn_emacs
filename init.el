@@ -473,6 +473,8 @@
   ;; Denote buffers automatically renamed to have prefix + title
   (denote-rename-buffer-mode 1))
 
+(use-package denote-sequence
+  :ensure t)
 
 (use-package denote-journal
   :custom ((denote-journal-directory
