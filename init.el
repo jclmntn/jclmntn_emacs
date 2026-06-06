@@ -8,6 +8,7 @@
    (global-display-line-numbers-mode t)                     ;; Ativa a numeração global
    (display-line-numbers-type 'visual)                      ;; Ativa a numeração relativa
    (indent-tabs-mode nil)                                   ;; Good riddance, Tabs
+   (tab-width 4) ;;Tab = 4 espaços
    (xref-search-program 'ripgrep)
    (tab-always-indent 'complete)
    (inhibit-startup-message t)
