@@ -177,6 +177,7 @@
   "nn"  '(denote :which-key)
   "nr"  '(denote-rename-file :which-key)
   "nl"  '(denote-link :which-key)
+  "nj"  '(denote-journal-new-or-existing-entry :which-key)
   "nf"  '(consult-notes :which-key)
   "nb"  '(denote-backlinks :which-key)
   "nwc" '(citar-create-note :which-key)
@@ -352,10 +353,17 @@
 (use-package denote
   :ensure t
   :hook (dired-mode . denote-dired-mode)
+  :custom ((denote-templates '((journal . "* Logs"))))
   :config
   (setq denote-directory (expand-file-name "~/Repos/Notes/denote-notes"))
   ;; Denote buffers automatically renamed to have prefix + title
   (denote-rename-buffer-mode 1))
+
+
+(use-package denote-journal
+  :custom ((denote-journal-directory
+            (expand-file-name "journal" denote-directory))
+           (denote-journal-title-format 'day-date-month-year)))
 
 (use-package citar
   :ensure t
