@@ -763,3 +763,63 @@
                   display-buffer-below-selected)
                  (window-height . 10)
                  (dedicated . t))))
+
+;; Experimentando com hledger
+(defun org-babel-execute:hledger (body params)
+  "Execute a block of hleder code with org-babel."
+  (let ((in-file (org-babel-temp-file "n" ".journal")))
+    (with-temp-file in-file
+      (insert body))
+    (org-babel-eval
+     (format "hledger bs" (org-babel-process-file-name in-file)) "")))
+
+
+;; Hledger Mode
+(defun my-short-hledger-amount ()
+  "Target an amount at point of the form hledger-amount-value-regex"
+  (save-excursion
+    (let* ((line-start (line-beginning-position))
+           (line-end (line-end-position))
+           (str (buffer-substring-no-properties line-start line-end))
+           (match (string-match (concat hledger-currency-string " ?" hledger-amount-value-regex) str))
+            ;; Embark is expecting the starting and ending positions of the match in the buffer. 
+           (buffer-match-start (+ line-start (match-beginning 0)))
+           (buffer-match-end (+ line-start (match-end 0))))
+      (save-match-data
+        (when (and (derived-mode-p 'hledger-mode) match)
+          `(hledger-amount
+            ,(format "%s" (match-string 0 str))
+            ,buffer-match-start . ,buffer-match-end))))))
+
+
+(defun hledger-completion-accounts ()
+  (when-let ((bounds (and (boundp 'hledger-accounts-cache)
+                          (bounds-of-thing-at-point 'symbol))))
+    (list (car bounds) (point) hledger-accounts-cache)))
+
+(defun jclmntn/hledger-imenu ()
+    (setq-local imenu-create-index-function #'imenu-default-create-index-function)
+    (setq-local imenu-generic-expression '(("Dates" "\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\)" 1))))
+
+(use-package hledger-mode
+  :ensure t
+  :mode "\\.journal\\'"
+  :custom
+  ((hledger-jfile "~/Repos/hlfinances/2026.journal") ;; Sempre atualizar para o mais recente.
+   (hledger-currency-string "R$")
+   (hledger-year-of-birth 1995)
+   (hledger-reporting-day 1)
+   (hledger-ratios-liquid-asset-accounts "assets:bank assets:wallet assets:caixinha")
+   (hledger-ratios-essential-expense-accounts "expenses:food expenses:groceries expenses:energy expenses:water expenses:streaming expenses:internet expenses:cellphone expenses:telephone"))
+  :hook
+  ((hledger-mode . (lambda ()
+                     (add-hook 'completion-at-point-functions 'hledger-completion-accounts)))
+   (hledger-mode . jclmntn/hledger-imenu))
+  :config
+  (with-eval-after-load 'embark
+    (add-to-list 'embark-target-finders 'my-short-hledger-amount)
+    (add-to-list 'embark-keymap-alist '(hledger-amount hledger-amount-keymap))
+  (defvar-keymap hledger-amount-keymap
+    :doc "Keymap for 'hledger-amount'"
+    :parent embark-general-map
+    "RET" #'hledger-edit-amount)))
