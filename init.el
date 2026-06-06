@@ -1,4 +1,6 @@
-;; Startup Configs 
+;; ;; -*- lexical-binding: t; -*-
+;; ;; Startup Configs 
+
 (use-package emacs
   :custom
   ((custom-file "~/.emacs.d/emacs-custom.el")               ;; Define a localização do arquivo com opções customizadas
@@ -8,8 +10,10 @@
    (indent-tabs-mode nil)                                   ;; Good riddance, Tabs
    (xref-search-program 'ripgrep)
    (tab-always-indent 'complete)
+   (text-mode-ispell-word-completion t)
    (inhibit-startup-message t)
-   (ring-bell-function #'ignore))
+   (ring-bell-function #'ignore)
+   (ansi-color-for-compilation-mode t))
   :config
   ;; Inicia o Emacs com tela cheia
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
@@ -19,24 +23,13 @@
   (dolist (mode '(eshell-mode-hook dired-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-  (pcase system-type
-    (windows-nt
-     ;; Ajustes de codificação quando estiver usando Windows
-     (prefer-coding-system 'utf-8)
-     (set-default-coding-systems 'utf-8)
-     (set-terminal-coding-system 'utf-8)
-     (set-keyboard-coding-system 'utf-8)
-     (setq-default default-process-coding-system '(utf-8 . cp1252))
-     ;; Tooling no Windows
-     (add-to-list 'exec-path "C:/Users/jose/Portable/msys64/usr/bin/")
-     (add-to-list 'exec-path "C:/Users/jose/Portable/fd")
-     (add-to-list 'exec-path "C:/Users/jose/Portable/rg")
-     (add-to-list 'exec-path "~/Portable/Git/bin")
-     (add-to-list 'exec-path "~/Repos")
-     (setenv "PATH" (mapconcat #'identity exec-path path-separator))))
+  ;; Ajustes de codificação
+  (prefer-coding-system 'utf-8)
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
 
   ;; Configurações de cores no compile-mode
-  (setq ansi-color-for-compilation-mode t)
   (add-hook 'compilation-filter-hook #'ansi-color-compilation-filter))
 
 (use-package ediff
@@ -44,17 +37,29 @@
   ((ediff-split-window-function 'split-window-horizontally)
    (ediff-window-setup-function 'ediff-setup-windows-plain)))
 
+(use-package dired
+  :ensure nil
+  :custom
+  ((dired-kill-when-opening-new-dired-buffer t)
+   (dired-dwim-target t)))
+
+;; Tooling
+(add-to-list 'exec-path "~/Repos")
+(setenv "PATH" (mapconcat #'identity exec-path path-separator))
+
 ;; Adiciona o MELPA à lista de pacotes possíveis
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
-;; Tema
+
+;; ;; Tema
 (use-package modus-themes)
 (load-theme 'modus-operandi)
 
-;; Fontes
-(set-face-attribute 'default nil :font "Noto Sans Mono" :height 140)
-(set-face-attribute 'fixed-pitch nil :font "Noto Sans Mono" :height 140)
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height 140 :weight 'regular)
+;; ;; Fontes
+(set-face-attribute 'default nil :font "IosevkaTerm" :height 140)
+(set-face-attribute 'fixed-pitch nil :font "IosevkaTerm" :height 140)
+(set-face-attribute 'variable-pitch nil :font "IosevkaTerm" :height 140 :weight 'regular)
 
 ;; Remove elementos visuais
 (scroll-bar-mode -1)
@@ -87,26 +92,16 @@
   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   (define-key evil-normal-state-map (kbd "C-.") nil)
-  (setq assocl-mark-set '(("À" . ?A) ("È" . ?E) ("Ì" . ?I) ("Ò" . ?O) ("Ù" . ?U) ("à" . ?a)
-                          ("è" . ?e) ("ò" . ?o) ("ù" . ?u) ("U" . ?V) ("u" . ?v) ("?" . ?N)
-                          ("?" . ?n) ("?" . ?W) ("?" . ?w) ("?" . ?Y) ("?" . ?y)))
-  (setq assocl-line-set '(("Á" . ?A) ("É" . ?E) ("Í" . ?I) ("Ó" . ?O) ("Ú" . ?U) ("Ý" . ?y)
-                          ("á" . ?a) ("é" . ?e) ("í" . ?i) ("ó" . ?o) ("ú" . ?u) ("ý" . ?y)
-                          ("N" . ?N) ("n" . ?n) ("U" . ?V) ("u" . ?v) ("?" . ?W) ("?" . ?w)))
-  (setq assocl-reg-set '(("Ä" . ?A) ("Ë" . ?E) ("Ï" . ?O) ("Ö" . ?U) ("Ü" . ?U) ("ä" . ?a)
-                         ("ë" . ?e) ("ï" . ?i) ("ö" . ?o) ("ü" . ?u) ("ÿ" . ?y) ("Ÿ" . ?Y)
-                         ("Ḧ" . ?H) ("ḧ" . ?h) ("Ẅ" . ?W) ("ẅ" . ?w) ("ẗ" . ?t)))
-  (seq-mapn
-   #'(lambda (item function)
-       (define-key
-        evil-normal-state-map (kbd (car item))
-        (lambda () (interactive) (function (cdr item)))))
-   assocl-mark-set
-   '(evil-goto-mark evil-goto-mark-line evil-use-register)))
+  (define-key evil-normal-state-map (kbd "M-.") nil))
 
 (use-package evil-collection
   :after evil
-  :config (evil-collection-init))
+  :config
+  (evil-collection-init)
+  (evil-collection-eat-setup))
+
+;; Árvore de undo
+(use-package vundo)
 
 ;; Definição de leader keys
 (use-package general
@@ -121,11 +116,15 @@
   "RET" '(consult-bookmark :which-key)
   "/"   '(consult-ripgrep :which-key)
   "."   '(consult-fd :which-key)
+  "i"   '(consult-imenu :which-key)
+  "e"   '(consult-eglot-symbols :which-key)
+  "f"   '(consult-flymake :which-key)
   "oc"  '(org-capture :which-key)
   "oa"  '(org-agenda :which-key)
   "nn"  '(denote :which-key)
   "nr"  '(denote-rename-file :which-key)
   "nl"  '(denote-link :which-key)
+  "nj"  '(denote-journal-new-or-existing-entry :which-key)
   "nf"  '(consult-notes :which-key)
   "nb"  '(denote-backlinks :which-key)
   "nwc" '(citar-create-note :which-key)
@@ -166,6 +165,11 @@
   (("C-s" . consult-line)
    ("C-x b" . consult-buffer)))
 
+(use-package consult-imenu
+  :after consult
+  :ensure nil)
+
+
 (use-package consult-notes
   :ensure t
   :commands (consult-notes
@@ -181,12 +185,14 @@
   :ensure t
   :bind (
          ("C-." . embark-act)
-         ("C-h B" . embark-bindings))
+         ("M-." . embark-dwim)
+         ("C-h b" . embark-bindings))
   :custom
   ((prefix-help-command #'embark-prefix-help-command))
   :config
-  (keymap-set jinx-repeat-map "RET" 'jinx-correct)
+  ;; Implementar o dado
   (embark-define-overlay-target jinx category (eq %p 'jinx-overlay))
+  (add-to-list 'embark-default-action-overrides '(jinx . jinx-correct))
   (add-to-list 'embark-target-finders 'embark-target-jinx-at-point)
   (add-to-list 'embark-keymap-alist '(jinx jinx-repeat-map embark-general-map))
   (add-to-list 'embark-repeat-actions #'jinx-next)
@@ -204,15 +210,53 @@
   :ensure t
   :custom
   (corfu-cycle t)
+  (corfu-auto-prefix 1)
+  (corfu-auto t)
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  (advice-add 'python-shell-completion-at-point :around
+            (lambda (fun &optional arg)
+              (cape-wrap-noninterruptible (lambda () (funcall fun arg))))))
+
+(use-package cape
+  :ensure t)
+
+;; to integrate yasnippet-capf with eglot completion
+;; https://github.com/minad/corfu/wiki#making-a-cape-super-capf-for-eglot
+
+;; Configuração do Eglot
+(defun jclmntn/eglot-capf-with-yasnippet ()
+  (setq-local completion-at-point-functions
+              (list 
+	       (cape-capf-super
+		#'eglot-completion-at-point
+		#'yasnippet-capf))))
+
+(setq eglot-python/pyright-uvtool-command
+      '("uv" "tool" "run" "--from" "pyright" "pyright-langserver" "--" "--stdio"))
+
+(use-package eglot
+  :hook (eglot-managed-mode . jclmntn/eglot-capf-with-yasnippet)
+  :config
+  (add-to-list 'eglot-server-programs `(python-mode . ,eglot-python/pyright-uvtool-command))
+  (add-to-list 'eglot-server-programs `(python-ts-mode . ,eglot-python/pyright-uvtool-command)))
+
+(use-package consult-eglot)
+
+(use-package eldoc-box
+  :hook (eglot-managed-mode . eldoc-box-hover-at-point-mode))
+
+(use-package flymake-ruff
+  :ensure t
+  :hook (eglot-managed-mode . flymake-ruff-load))
+
 
 ;; Elementos visuais do org-mode
 (defun jclmntn/org-font-setup ()
   ;; Replace list hyphen with dot
-  (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([-]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+  ;; (font-lock-add-keywords 'org-mode
+  ;;                         '(("^ *\\([-]\\) "
+  ;;                            (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\U+2022"))))))
 
   ;; Set faces for headig levels
   (dolist (face '((org-level-1 . 1.2)
@@ -223,7 +267,7 @@
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Noto Sans Mono" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
@@ -239,24 +283,49 @@
   (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (defun jclmntn/org-mode-setup ()
-    (org-indent-mode)
-    (variable-pitch-mode 1)
-    (visual-line-mode))
+  (org-indent-mode)
+  (variable-pitch-mode 1)
+  (visual-line-mode)
+  (setq-local completion-at-point-functions
+              (list 
+               (cape-capf-super
+                #'yasnippet-capf))))
+
+(defun jclmntn/babel-ansi ()
+  (when-let ((beg (org-babel-where-is-src-block-result nil nil)))
+    (save-excursion
+      (goto-char beg)
+      (when (looking-at org-babel-result-regexp)
+        (let ((end (org-babel-result-end))
+              (ansi-color-context-region nil))
+          (ansi-color-apply-on-region beg end))))))
 
 ;; Org Mode
 (use-package org
-  :hook (org-mode . jclmntn/org-mode-setup)
+  :hook
+  (org-mode . jclmntn/org-mode-setup)
+  (org-babel-after-execute . jclmntn/babel-ansi)
+  :ensure t
   :custom 
     ((org-todo-keywords
-        '("TODO(t!)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)"))
-    (org-todo-keyword-faces
-	'(("TODO" . "#c3e88d")
-	  ("NEXT" . "#c3e88d")
-	  ("IDEA" . "LightBlue")
-	  ("KILL" . "Red")))
+        '((sequence "TODO(t!)" "PROJ(j)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)")))
+     (org-todo-keyword-faces
+      '(
+        ("PROJ" . "Blue")
+        ("TODO" . "#c3e88d")
+        ("NEXT" . "#c3e88d")
+        ("IDEA" . "LightBlue")
+        ("KILL" . "Red")))
     (org-capture-templates
-	'(("i" "Idea" entry (file+olp "~/Repos/Notes/Tasks.org" "Caixa de Entrada") 
-	   "* IDEA %?\n %U\n %a\n %i" :empty-lines 1)))
+     '(("i" "Idea" entry
+        (file+olp "~/Repos/Notes/Tasks.org" "Caixa de Entrada") 
+	"* IDEA %?\n%U\n %a\n %i"
+        :empty-lines 1)
+       ("l" "Log" entry
+        (file+olp denote-journal-path-to-new-or-existing-entry "Logs")
+        "* %U %?\n%i\n%a"
+          :kill-buffer t
+          :empty-lines 1)))
     (org-agenda-files '("~/Repos/Notes/Tasks.org"))
     (org-log-into-drawer t)
     (org-log-done 'time)
@@ -264,21 +333,43 @@
     (org-agenda-restore-windows-after-quit t)
     (org-src-window-setup 'plain)
     (org-src-preserve-indentation t)
-    (org-confirm-babel-evaluate nil))
+    (org-confirm-babel-evaluate nil)
+    (org-plantuml-jar-path "~/.config/plantuml/plantuml-mit-1.2025.9.jar")
+    (org-latex-src-block-backend 'engraved)
+    (org-latex-pdf-process
+        '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+            "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+            "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+    (org-cite-csl-link-cites nil)
+    (org-cite-csl-nocitelinks-backends '(ascii md gfm))
+    (org-refile-targets '(("~/Repos/Notes/Tasks.org" :maxlevel . 3))))
     :config
+    (add-to-list 'org-src-lang-modes '("planuml" . plantuml))
     (jclmntn/org-font-setup)
     (org-babel-do-load-languages
     'org-babel-load-languages
-    '((emacs-lisp . t)
-        (python . t)
-        (eshell . t)
-        (R . t))))
+    '(
+      (emacs-lisp . t)
+      (python . t)
+      (plantuml . t)
+      (eshell . t)))
+    (defun org--get-display-dpi ()
+        "Hardcode display DPI to bypass PGTK/Wayland arithmetic overflow bug."
+        200.0)
+    ) 
+
+(use-package plantuml-mode
+  :custom
+  ((plantuml-jar-path "~/.config/plantuml/plantuml-mit-1.2025.9.jar")
+   (plantuml-default-exec-mode 'jar)))
 
 (use-package org-bullets
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+  :hook (org-mode . (lambda () (org-bullets-mode 1))))
 
+(use-package org-transclusion
+  :after org)
+
+;; Meio que foda-se ter isso
 ;; (defun jclmntn/org-mode-visual-fill ()
 ;;   (setq visual-fill-column-width 120
 ;;         visual-fill-column-center-text t)
@@ -292,16 +383,29 @@
 (use-package denote
   :ensure t
   :hook (dired-mode . denote-dired-mode)
+  :custom ((denote-templates '((journal . "* Logs"))))
   :config
   (setq denote-directory (expand-file-name "~/Repos/Notes/denote-notes"))
   ;; Denote buffers automatically renamed to have prefix + title
   (denote-rename-buffer-mode 1))
 
+
+(use-package denote-journal
+  :custom ((denote-journal-directory
+            (expand-file-name "journal" denote-directory))
+           (denote-journal-title-format 'day-date-month-year)))
+
 (use-package citar
   :ensure t
   :custom
-  (citar-bibliography '("~/Repos/Notes/bib/references.bib" "~/Repos/Notes/bib/Paper2025a.bib"))
+  ((citar-bibliography (file-expand-wildcards "~/Repos/Notes/bib/*.bib"))
   (citar-open-always-create-notes nil)
+  ;; (org-cite-global-bibliography '("~/bib/references.bib"))
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar))
+  :bind
+  (:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
   :hook (org-mode . citar-capf-setup))
 
 (use-package citar-embark
@@ -309,6 +413,26 @@
  :after citar embark
  :no-require
  :config (citar-embark-mode))
+
+(use-package biblio)
+
+(use-package biblio-openlibrary
+  :vc (:url "https://github.com/fabcontigiani/biblio-openlibrary" :branch "master")
+  :after biblio)
+
+(use-package ebib
+  :ensure t
+  :custom (ebib-default-directory "~/Repos/Notes/bib/"))
+
+(use-package ebib-biblio
+  :ensure nil
+  :after (ebib biblio)
+  :bind (:map ebib-index-mode-map
+              ("B" . ebib-biblio-import-doi)
+              :map biblio-selection-mode-map
+              ("e" . ebib-biblio-selection-import)))
+
+
 
 (use-package citar-denote
   :ensure t
@@ -326,71 +450,261 @@
   :init
   (citar-denote-mode))
 
-;; Magit
+;; ;; Magit
 (use-package magit
   :custom
   (magit-display-buffer-action #'magit-display-buffer-same-window-except-diff-v1))
 
+;; Não está funcionando atualmente, preciso entender o porquê.
+;; Abri um PR no Forge.
+(use-package forge
+  :after magit)
+
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode 1))
+
+;; Programming Modes
+
+(defun jclmntn-python-dynamic-shell-args (&rest _args)
+  "Dynamically set python shell args based on pyproject.toml"
+  (let ((pyproject-file (locate-dominating-file default-directory "pyproject.toml")))
+    (when pyproject-file
+      (let ((args (with-temp-buffer
+                    (insert-file-contents (expand-file-name "pyproject.toml" pyproject-file))
+                    (goto-char (point-min))
+                    (cond
+                     ((re-search-forward "kedro" nil t) "run kedro ipython --simple-prompt -i")
+                     ((progn (goto-char (point-min)) (re-search-forward "ipython" nil t)) "run ipython")
+                     (t "run python -i")))))
+        (setq-local python-shell-interpreter-args args)
+        (message "Python args set to: %s" args)))))
+
+(use-package python
+  :ensure t
+  :mode (("\\.py\\'" . python-ts-mode))
+  :hook ((python-ts-mode . display-fill-column-indicator-mode)
+         (python-ts-mode . jclmntn-python-dynamic-shell-args)
+         (python-ts-mode . jclmntn-python-dynamic-shell-args))
+  :custom ((python-shell-interpreter "uv")
+           (python-shell-interpreter-args "run python -i")
+           (python-indent-offset 4)
+           (python-indent-def-block-scale 1)
+           (python-shell-prompt-detect-enabled nil))
+  :config
+  (advice-add 'run-python :before #'jclmntn-python-dynamic-shell-args)
+  )
 
 ;; Yasnippets
 (use-package yasnippet
-  :config
+ :config
   (setq yas-snippet-dirs '("~/Repos/Notes/Snippets/"))
   (yas-global-mode 1))
 
+(use-package yasnippet-capf
+  :after cape
+  :vc (:url https://github.com/elken/yasnippet-capf.git)) 
 
-;; Programming Modes
-(use-package python
-  :ensure t
-  :hook ((python-ts-mode . eglot-ensure)
-	 (python-ts-mode . company-mode)
-	 (python-ts-mode . display-fill-column-indicator-mode))
-  :mode (("\\.py\\'" . python-ts-mode)))
-
-
-;; Para buildar o Blog
-(use-package htmlize
-  :ensure t)
-
-;; Para trabalhar com o Xournal
-;; (add-to-list 'load-path "~/.emacs.d/manual-packages/org-xournalpp")
-
-;; (use-package org-xournalpp
-;;   ;; Estou usando um fork: gitlab.com/vherrmann/org-xournalpp.
-;;   ;; Parece atender as minhas necessidades até agora.
-;;   ;; Eu só uso para criar links com arquivos .xopp, porque a visualização no arquivo está praticamente impossível.
-;;   :ensure nil
-;;   ;; :hook (org-mode . org-xournalpp-mode)
+;; (use-package org-block-capf
+;;   :after org
+;;   :ensure t
+;;   :vc (:url https://github.com/xenodium/org-block-capf.git)
 ;;   :config
-;;   (setq org-xournalpp-export-dir "~/repos/notes/figs/")
-;;   (setq org-xournalpp-path-default "~/repos/notes/figs/")
-;;   (setq org-xournalpp-executable "C:/Program Files/Xournal++/bin/xournalpp.exe"))
+;;   (add-to-list 'completion-at-point-functions #'org-block-capf))
 
-;; Spellchecking
+
+
+;; Spellchecking com o Jinx
 (use-package jinx
-    :if (eq system-type 'gnu/linux)
-    :hook (emacs-startup . global-jinx-mode)
-    :bind (("M-$" . jinx-correct)
-        ("C-M-$" . jinx-language))
-    :custom (jinx-languages "pt_BR" "en_US"))
+  :hook (emacs-startup . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-languages))
+  :custom (jinx-languages "pt_BR" "en_US"))
 
-;; Gestão de citações
-(use-package ebib
-  :custom ((ebib-default-directory "~/Repos/Notes/bib/")))
+;; Abrir links com Navegador do Windows
+;; Determine the specific system type. 
+;; Emacs variable system-type doesn't yet have a "wsl/linux" value,
+;; so I'm front-ending system-type with my variable: sysTypeSpecific.
+;; I'm no elisp hacker, so I'm diverging from the elisp naming convention
+;; to ensure that I'm not stepping on any pre-existing variable.
+(setq-default sysTypeSpecific  system-type) ;; get the system-type value
 
-(use-package biblio)
+(cond 
+;; If type is "gnu/linux", override to "wsl/linux" if it's WSL.
+((eq sysTypeSpecific 'gnu/linux)  
+(when (string-match "Linux.*Microsoft.*Linux" 
+                    (shell-command-to-string "uname -a"))
 
-(use-package biblio-openlibrary
-  :vc (:url "https://github.com/fabcontigiani/biblio-openlibrary.git")
-  :after biblio)
+    (setq-default sysTypeSpecific "wsl/linux") ;; for later use.
+    (setq
+    cmdExeBin"/mnt/c/Windows/System32/cmd.exe"
+    cmdExeArgs '("/c" "start" "") )
+    (setq
+    browse-url-generic-program  cmdExeBin
+    browse-url-generic-args     cmdExeArgs
+    browse-url-browser-function 'browse-url-generic)
+    )))
 
-(use-package ebib-biblio
-  :ensure nil
-  :after (ebib biblio)
-  :bind (:map ebib-index-mode-map
-              ("B" . ebib-biblio-import-doi)
-              :map biblio-selection-mode-map
-              ("e" . ebib-biblio-selection-import)))
+;; Elfeed
+(use-package elfeed
+  :custom ((elfeed-feeds '(("https://www.tandfonline.com/feed/rss/cjas20" journal stats)
+                           ("https://hdsr.mitpress.mit.edu/rss.xml" blog data)
+                           ("https://rss.sciencedirect.com/publication/science/01482963" journal business stats)
+                           ("http://feeds.harvardbusiness.org/harvardbusiness/" blog business)
+                           ("https://www.insurancejournal.com/rss/news" news insurance)
+                           ("https://www.nexojornal.com.br/rss.xml" news brazil)
+                           ("https://www.counting-stuff.com/rss" blog stats)
+                           ("https://blog.miguelgrinberg.com/feed" blog python)
+                           ("https://grouplens.org/feed/" blog computing)))))
 
-;; Exportações com Pandoc
+(use-package engrave-faces)
+
+;;(use-package pandoc-mode)
 (use-package ox-pandoc)
+
+(use-package project
+  :custom
+  ((project-mode-line t)
+   (project-vc-extra-root-markers '("pyproject.toml"))))
+
+(use-package just-mode)
+
+(use-package hl-todo
+  :ensure t
+  :hook ((prog-mode . hl-todo-mode)
+         (yaml-mode . hl-todo-mode))
+  :config
+  (setq hl-todo-keyword-faces
+         '(("TODO"   . "#FF0000")
+           ("FIXME"  . "#FF0000"))))
+    
+
+(with-eval-after-load 'magit
+    (add-hook 'magit-log-wash-summary-hook
+              #'hl-todo-search-and-highlight t)
+    (add-hook 'magit-revision-wash-message-hook
+              #'hl-todo-search-and-highlight t))
+
+(use-package pulsar
+  :ensure t
+  :bind
+  ( :map global-map
+    ("C-x l" . pulsar-pulse-line) ; overrides `count-lines-page'
+    ("C-x L" . pulsar-highlight-permanently-dwim)) ; or use `pulsar-highlight-temporarily-dwim'
+  :init
+  (pulsar-global-mode 1)
+  :config
+  (setq pulsar-delay 0.055)
+  (setq pulsar-iterations 5)
+  (setq pulsar-face 'pulsar-green)
+  (setq pulsar-region-face 'pulsar-yellow)
+  (setq pulsar-highlight-face 'pulsar-magenta))
+
+
+;; Agentic-coding
+(use-package agent-shell
+    :ensure t
+    :ensure-system-package
+    ;; Add agent installation configs here
+    ((gemini . "npm install -g @google/gemini-cli"))
+    :custom
+    (agent-shell-google-authentication
+     (agent-shell-google-make-authentication :login t)))
+
+;; Nerd Fonts
+(use-package nerd-icons
+  :ensure t
+  :custom (nerd-icons-font-family "Symbols Nerd Font Mono"))
+
+(use-package nerd-icons-corfu
+  :ensure t
+  :config (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
+(use-package nerd-icons-dired
+  :ensure t
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
+
+(use-package nerd-icons-completion
+  :config
+  (nerd-icons-completion-mode)
+  (with-eval-after-load 'marginalia
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup)))
+
+(use-package nerd-icons-ibuffer
+  :ensure t
+  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
+
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1)
+  :custom
+  (doom-modeline-vcs-max-length 30))
+
+
+;; Emacs EAT
+(use-package eat
+  :ensure t
+  :config (eat-eshell-mode))
+
+;; EJC-SQL
+(defun jclmntn/ejc-maybe-add-limit (args)
+  "Inject LIMIT 200 into SELECT queries that do not already specify a limit."
+  (let* ((sql (car args))
+         (upper (when sql (upcase (string-trim sql)))))
+    (if (and upper
+             (or (string-match-p "\\`SELECT\\b" upper)
+                 (string-match-p "\\`WITH\\b" upper))
+             (not (string-match-p "\\bLIMIT\\b" upper)))
+        (cons (concat (string-trim-right sql) "\nLIMIT 200") (cdr args))
+      args)))
+
+(defun jclmntn/ejc-sql-connected-hook ()
+  (ejc-set-fetch-size 99)         ; Limit for the number of records to output.
+  (ejc-set-max-rows 99)           ; Limit for the number of records in ResultSet.
+  (ejc-set-show-too-many-rows-message t) ; Set output 'Too many rows' message.
+  (ejc-set-column-width-limit nil) ; Limit for outputing the number of chars per column.
+  (ejc-set-use-unicode t)         ; Use unicode symbols for grid borders.
+  )
+
+(use-package ejc-sql
+  :ensure t
+  :hook (ejc-sql-connected . jclmntn/ejc-sql-connected-hook)
+  :custom
+  (ejc-nrepl-timeout nil)
+  (ejc-show-result-bottom t)
+  :config
+  (setq nrepl-sync-request-timeout nil)
+  (require 'ejc-completion-common)
+  (advice-add 'ejc-eval-user-sql :filter-args #'jclmntn/ejc-maybe-add-limit)
+  (ejc-create-connection
+   "BigQuery"
+   :dependencies [[com.simba.googlebigquery/googlebigquery-jdbc42 "1.6.3.1004"]
+                  [com.google.cloud/google-cloud-bigquerystorage "3.9.3"]
+                  [com.google.apis/google-api-services-bigquery "v2-rev20240919-2.0.0"]
+                  [com.google.auth/google-auth-library-oauth2-http "1.28.0"]]
+   :classname "com.simba.googlebigquery.jdbc.Driver"
+   :connection-uri (concat "jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443"
+                           ";ProjectId=azos-data-analytics"
+                           ";OAuthType=0"
+                           ";OAuthServiceAcctEmail=azos-feature-store@azos-data-analytics.iam.gserviceaccount.com"
+                           ";OAuthPvtKeyPath=" (expand-file-name "~/.config/gcloud/feature-store.json")))
+
+    (let* ((auth (car (auth-source-search :host "postgres-dis")))
+         (user (plist-get auth :user))
+         (subname (plist-get auth :subname))
+         (password (let ((secret (plist-get auth :secret)))
+                     (if (functionp secret) (funcall secret) secret))))
+    (ejc-create-connection
+     "PostgreSQLDis"
+     :dependencies [[org.postgresql/postgresql "42.7.3"]]
+     :classpath (concat "~/.m2/repository/org.postgresql/postgresql/42.7.3/"
+                        "postgresql-42.7.3.jar")
+     :subprotocol "postgresql"
+     :subname subname
+     :user user
+     :password password)))
+
+;; ECA emacs
+(use-package eca
+  :vc (:url "https://github.com/editor-code-assistant/eca-emacs" :rev :newest))
