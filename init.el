@@ -377,7 +377,6 @@
   :custom
   ((citar-bibliography (file-expand-wildcards "~/Repos/Notes/bib/*.bib"))
   (citar-open-always-create-notes nil)
-  ;; (org-cite-global-bibliography '("~/bib/references.bib"))
   (org-cite-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
   (org-cite-activate-processor 'citar))
