@@ -485,12 +485,11 @@
   :ensure t
   :custom
   ((citar-bibliography (file-expand-wildcards "~/Repos/Notes/bib/*.bib"))
-  (citar-open-always-create-notes nil)
-  (org-cite-insert-processor 'citar)
-  (org-cite-follow-processor 'citar)
-  (org-cite-activate-processor 'citar))
-  :bind
-  (:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
+   (citar-open-always-create-notes nil)
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar))
+  :bind (:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
   :hook (org-mode . citar-capf-setup))
 
 (use-package citar-embark
