@@ -93,6 +93,16 @@
   (with-eval-after-load 'marginalia
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup)))
 
+(use-package nerd-icons-ibuffer
+  :ensure t
+  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
+
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1)
+  :custom
+  (doom-modeline-vcs-max-length 30))
+
 ;; Pulsar
 (use-package pulsar
   :ensure t
@@ -284,7 +294,7 @@
                   (org-level-6 . 1.1)
                   (org-level-7 . 1.1)
                   (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Noto Sans Mono" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
@@ -300,9 +310,22 @@
   (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
 
 (defun jclmntn/org-mode-setup ()
-    (org-indent-mode)
-    (variable-pitch-mode 1)
-    (visual-line-mode))
+  (org-indent-mode)
+  (variable-pitch-mode 1)
+  (visual-line-mode)
+  (setq-local completion-at-point-functions
+              (list 
+               (cape-capf-super
+                #'yasnippet-capf))))
+
+(defun jclmntn/babel-ansi ()
+  (when-let ((beg (org-babel-where-is-src-block-result nil nil)))
+    (save-excursion
+      (goto-char beg)
+      (when (looking-at org-babel-result-regexp)
+        (let ((end (org-babel-result-end))
+              (ansi-color-context-region nil))
+          (ansi-color-apply-on-region beg end))))))
 
 ;; Org Mode
 (use-package org
@@ -332,21 +355,43 @@
     (org-agenda-restore-windows-after-quit t)
     (org-src-window-setup 'plain)
     (org-src-preserve-indentation t)
-    (org-confirm-babel-evaluate nil))
+    (org-confirm-babel-evaluate nil)
+    (org-plantuml-jar-path "~/.config/plantuml/plantuml-mit-1.2025.9.jar")
+    (org-latex-src-block-backend 'engraved)
+    (org-latex-pdf-process
+        '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+            "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+            "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+    (org-cite-csl-link-cites nil)
+    (org-cite-csl-nocitelinks-backends '(ascii md gfm))
+    (org-refile-targets '(("~/Repos/Notes/Tasks.org" :maxlevel . 3))))
     :config
+    (add-to-list 'org-src-lang-modes '("planuml" . plantuml))
     (jclmntn/org-font-setup)
     (org-babel-do-load-languages
     'org-babel-load-languages
-    '((emacs-lisp . t)
-        (python . t)
-        (eshell . t)
-        (R . t))))
+    '(
+      (emacs-lisp . t)
+      (python . t)
+      (plantuml . t)
+      (eshell . t)))
+    (defun org--get-display-dpi ()
+        "Hardcode display DPI to bypass PGTK/Wayland arithmetic overflow bug."
+        200.0)
+    ) 
+
+(use-package plantuml-mode
+  :custom
+  ((plantuml-jar-path "~/.config/plantuml/plantuml-mit-1.2025.9.jar")
+   (plantuml-default-exec-mode 'jar)))
 
 (use-package org-bullets
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+  :hook (org-mode . (lambda () (org-bullets-mode 1))))
 
+(use-package org-transclusion
+  :after org)
+
+;; Meio que foda-se ter isso
 ;; (defun jclmntn/org-mode-visual-fill ()
 ;;   (setq visual-fill-column-width 120
 ;;         visual-fill-column-center-text t)
