@@ -259,6 +259,7 @@
              consult-notes-search-in-all-notes)
   :config
   (consult-notes-org-headings-mode)
+  (consult-notes-denote-mode)
   (when (locate-library "denote")
     (consult-notes-denote-mode))
   :custom
