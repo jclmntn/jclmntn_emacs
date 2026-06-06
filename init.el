@@ -53,16 +53,17 @@
    (dired-dwim-target t)))
 
 ;; Adiciona o MELPA à lista de pacotes possíveis
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
 ;; Tema
 (use-package modus-themes)
 (load-theme 'modus-operandi)
 
-;; Fontes
-(set-face-attribute 'default nil :font "Noto Sans Mono" :height 140)
-(set-face-attribute 'fixed-pitch nil :font "Noto Sans Mono" :height 140)
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height 140 :weight 'regular)
+;; ;; Fontes
+(set-face-attribute 'default nil :font "IosevkaTerm" :height 140)
+(set-face-attribute 'fixed-pitch nil :font "IosevkaTerm" :height 140)
+(set-face-attribute 'variable-pitch nil :font "IosevkaTerm" :height 140 :weight 'regular)
 
 ;; Remove elementos visuais
 (scroll-bar-mode -1)
