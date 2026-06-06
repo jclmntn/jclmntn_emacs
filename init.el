@@ -476,6 +476,9 @@
   :custom
   (magit-display-buffer-action #'magit-display-buffer-same-window-except-diff-v1))
 
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode 1))
 
 ;; Yasnippets
 (use-package yasnippet
