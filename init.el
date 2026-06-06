@@ -605,16 +605,7 @@
 ;; Para trabalhar com o Xournal
 ;; (add-to-list 'load-path "~/.emacs.d/manual-packages/org-xournalpp")
 
-;; (use-package org-xournalpp
-;;   ;; Estou usando um fork: gitlab.com/vherrmann/org-xournalpp.
-;;   ;; Parece atender as minhas necessidades até agora.
-;;   ;; Eu só uso para criar links com arquivos .xopp, porque a visualização no arquivo está praticamente impossível.
-;;   :ensure nil
-;;   ;; :hook (org-mode . org-xournalpp-mode)
-;;   :config
-;;   (setq org-xournalpp-export-dir "~/repos/notes/figs/")
-;;   (setq org-xournalpp-path-default "~/repos/notes/figs/")
-;;   (setq org-xournalpp-executable "C:/Program Files/Xournal++/bin/xournalpp.exe"))
+
 
 ;; Spellchecking
 (use-package jinx
