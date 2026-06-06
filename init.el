@@ -476,9 +476,45 @@
   :custom
   (magit-display-buffer-action #'magit-display-buffer-same-window-except-diff-v1))
 
+;; Não está funcionando atualmente, preciso entender o porquê.
+;; Abri um PR no Forge.
+(use-package forge
+  :after magit)
+
 (use-package magit-todos
   :after magit
   :config (magit-todos-mode 1))
+
+;; Programming Modes
+
+(defun jclmntn-python-dynamic-shell-args (&rest _args)
+  "Dynamically set python shell args based on pyproject.toml"
+  (let ((pyproject-file (locate-dominating-file default-directory "pyproject.toml")))
+    (when pyproject-file
+      (let ((args (with-temp-buffer
+                    (insert-file-contents (expand-file-name "pyproject.toml" pyproject-file))
+                    (goto-char (point-min))
+                    (cond
+                     ((re-search-forward "kedro" nil t) "run kedro ipython --simple-prompt -i")
+                     ((progn (goto-char (point-min)) (re-search-forward "ipython" nil t)) "run ipython")
+                     (t "run python -i")))))
+        (setq-local python-shell-interpreter-args args)
+        (message "Python args set to: %s" args)))))
+
+(use-package python
+  :ensure t
+  :mode (("\\.py\\'" . python-ts-mode))
+  :hook ((python-ts-mode . display-fill-column-indicator-mode)
+         (python-ts-mode . jclmntn-python-dynamic-shell-args)
+         (python-ts-mode . jclmntn-python-dynamic-shell-args))
+  :custom ((python-shell-interpreter "uv")
+           (python-shell-interpreter-args "run python -i")
+           (python-indent-offset 4)
+           (python-indent-def-block-scale 1)
+           (python-shell-prompt-detect-enabled nil))
+  :config
+  (advice-add 'run-python :before #'jclmntn-python-dynamic-shell-args)
+  )
 
 ;; Yasnippets
 (use-package yasnippet
@@ -486,14 +522,80 @@
   (setq yas-snippet-dirs '("~/Repos/Notes/Snippets/"))
   (yas-global-mode 1))
 
+(use-package yasnippet-capf
+  :after cape
+  :vc (:url https://github.com/elken/yasnippet-capf.git)) 
 
-;; Programming Modes
-(use-package python
+;; Spellchecking com o Jinx
+(use-package jinx
+  :hook (emacs-startup . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-languages))
+  :custom (jinx-languages "pt_BR" "en_US"))
+
+;; Abrir links com Navegador do Windows
+;; Determine the specific system type. 
+;; Emacs variable system-type doesn't yet have a "wsl/linux" value,
+;; so I'm front-ending system-type with my variable: sysTypeSpecific.
+;; I'm no elisp hacker, so I'm diverging from the elisp naming convention
+;; to ensure that I'm not stepping on any pre-existing variable.
+(setq-default sysTypeSpecific  system-type) ;; get the system-type value
+
+(cond 
+;; If type is "gnu/linux", override to "wsl/linux" if it's WSL.
+((eq sysTypeSpecific 'gnu/linux)  
+(when (string-match "Linux.*Microsoft.*Linux" 
+                    (shell-command-to-string "uname -a"))
+
+    (setq-default sysTypeSpecific "wsl/linux") ;; for later use.
+    (setq
+    cmdExeBin"/mnt/c/Windows/System32/cmd.exe"
+    cmdExeArgs '("/c" "start" "") )
+    (setq
+    browse-url-generic-program  cmdExeBin
+    browse-url-generic-args     cmdExeArgs
+    browse-url-browser-function 'browse-url-generic)
+    )))
+
+;; Elfeed
+(use-package elfeed
+  :custom ((elfeed-feeds '(("https://www.tandfonline.com/feed/rss/cjas20" journal stats)
+                           ("https://hdsr.mitpress.mit.edu/rss.xml" blog data)
+                           ("https://rss.sciencedirect.com/publication/science/01482963" journal business stats)
+                           ("http://feeds.harvardbusiness.org/harvardbusiness/" blog business)
+                           ("https://www.insurancejournal.com/rss/news" news insurance)
+                           ("https://www.nexojornal.com.br/rss.xml" news brazil)
+                           ("https://www.counting-stuff.com/rss" blog stats)
+                           ("https://blog.miguelgrinberg.com/feed" blog python)
+                           ("https://grouplens.org/feed/" blog computing)))))
+
+(use-package engrave-faces)
+
+;;(use-package pandoc-mode)
+(use-package ox-pandoc)
+
+(use-package project
+  :custom
+  ((project-mode-line t)
+   (project-vc-extra-root-markers '("pyproject.toml"))))
+
+(use-package just-mode)
+
+(use-package hl-todo
   :ensure t
-  :hook ((python-ts-mode . eglot-ensure)
-	 (python-ts-mode . company-mode)
-	 (python-ts-mode . display-fill-column-indicator-mode))
-  :mode (("\\.py\\'" . python-ts-mode)))
+  :hook ((prog-mode . hl-todo-mode)
+         (yaml-mode . hl-todo-mode))
+  :config
+  (setq hl-todo-keyword-faces
+         '(("TODO"   . "#FF0000")
+           ("FIXME"  . "#FF0000"))))
+    
+
+(with-eval-after-load 'magit
+    (add-hook 'magit-log-wash-summary-hook
+              #'hl-todo-search-and-highlight t)
+    (add-hook 'magit-revision-wash-message-hook
+              #'hl-todo-search-and-highlight t))
 
 
 ;; Para buildar o Blog
