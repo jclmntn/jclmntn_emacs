@@ -751,3 +751,15 @@
 ;; ECA emacs
 (use-package eca
   :vc (:url "https://github.com/editor-code-assistant/eca-emacs" :rev :newest))
+
+;; Racket Mode
+(use-package racket-mode
+  :mode (("\\.scm\\'" . racket-mode))
+  :config
+  (add-to-list 'display-buffer-alist
+               '(
+                 "\\*Racket REPL"
+                 (display-buffer-reuse-mode-window
+                  display-buffer-below-selected)
+                 (window-height . 10)
+                 (dedicated . t))))
