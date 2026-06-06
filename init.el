@@ -373,7 +373,10 @@
 
 ;; Org Mode
 (use-package org
-  :hook (org-mode . jclmntn/org-mode-setup)
+  :hook
+  (org-mode . jclmntn/org-mode-setup)
+  (org-babel-after-execute . jclmntn/babel-ansi)
+  :ensure t
   :custom 
     ((org-todo-keywords
         '("TODO(t!)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)"))
