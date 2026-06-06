@@ -1,4 +1,6 @@
-;; Startup Configs 
+;; ;; -*- lexical-binding: t; -*-
+;; ;; Startup Configs 
+
 (use-package emacs
   :custom
   ((custom-file "~/.emacs.d/emacs-custom.el")               ;; Define a localização do arquivo com opções customizadas
@@ -9,7 +11,8 @@
    (xref-search-program 'ripgrep)
    (tab-always-indent 'complete)
    (inhibit-startup-message t)
-   (ring-bell-function #'ignore))
+   (ring-bell-function #'ignore)
+   (ansi-color-for-compilation-mode t))
   :config
   ;; Inicia o Emacs com tela cheia
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
@@ -36,13 +39,18 @@
      (setenv "PATH" (mapconcat #'identity exec-path path-separator))))
 
   ;; Configurações de cores no compile-mode
-  (setq ansi-color-for-compilation-mode t)
   (add-hook 'compilation-filter-hook #'ansi-color-compilation-filter))
 
 (use-package ediff
   :custom
   ((ediff-split-window-function 'split-window-horizontally)
    (ediff-window-setup-function 'ediff-setup-windows-plain)))
+
+(use-package dired
+  :ensure nil
+  :custom
+  ((dired-kill-when-opening-new-dired-buffer t)
+   (dired-dwim-target t)))
 
 ;; Adiciona o MELPA à lista de pacotes possíveis
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
