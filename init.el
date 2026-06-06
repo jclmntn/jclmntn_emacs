@@ -56,6 +56,7 @@
 (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
+;; Deixando o Emacs mais bonito
 ;; Tema
 (use-package modus-themes)
 (load-theme 'modus-operandi)
@@ -71,6 +72,42 @@
 (tooltip-mode -1)
 (menu-bar-mode -1)
 (set-fringe-mode '(20 . 0))
+
+;; Nerd Fonts
+(use-package nerd-icons
+  :ensure t
+  :custom (nerd-icons-font-family "Symbols Nerd Font Mono"))
+
+(use-package nerd-icons-corfu
+  :ensure t
+  :config (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
+(use-package nerd-icons-dired
+  :ensure t
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
+
+(use-package nerd-icons-completion
+  :config
+  (nerd-icons-completion-mode)
+  (with-eval-after-load 'marginalia
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup)))
+
+;; Pulsar
+(use-package pulsar
+  :ensure t
+  :bind
+  ( :map global-map
+    ("C-x l" . pulsar-pulse-line) ; overrides `count-lines-page'
+    ("C-x L" . pulsar-highlight-permanently-dwim)) ; or use `pulsar-highlight-temporarily-dwim'
+  :init
+  (pulsar-global-mode 1)
+  :config
+  (setq pulsar-delay 0.055)
+  (setq pulsar-iterations 5)
+  (setq pulsar-face 'pulsar-green)
+  (setq pulsar-region-face 'pulsar-yellow)
+  (setq pulsar-highlight-face 'pulsar-magenta))
 
 ;; Para não precisar poluir o ambiente com :ensure t
 (use-package use-package
