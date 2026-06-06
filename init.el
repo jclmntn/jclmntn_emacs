@@ -133,6 +133,8 @@
   "RET" '(consult-bookmark :which-key)
   "/"   '(consult-ripgrep :which-key)
   "."   '(consult-fd :which-key)
+  "i"   '(consult-imenu :which-key)
+  "f"   '(consult-flymake :which-key)
   "oc"  '(org-capture :which-key)
   "oa"  '(org-agenda :which-key)
   "nn"  '(denote :which-key)
@@ -177,6 +179,11 @@
   :bind
   (("C-s" . consult-line)
    ("C-x b" . consult-buffer)))
+
+(use-package consult-imenu
+  :after consult
+  :ensure nil)
+
 
 (use-package consult-notes
   :ensure t
