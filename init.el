@@ -548,6 +548,10 @@
   :after magit
   :config (magit-todos-mode 1))
 
+;; Pra forçar a codificação do comando git.
+;; Engraçado que isso tenha dado certo, significa que por alguma razão o git tem outra codificação mesmo no WSL.
+(setq-default process-coding-system-alist (cons '("git" . (utf-8 . utf-8)) process-coding-system-alist))
+
 ;; Programming Modes
 
 (defun jclmntn-python-dynamic-shell-args (&rest _args)
