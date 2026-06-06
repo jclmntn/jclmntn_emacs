@@ -316,8 +316,15 @@
 	  ("IDEA" . "LightBlue")
 	  ("KILL" . "Red")))
     (org-capture-templates
-	'(("i" "Idea" entry (file+olp "~/Repos/Notes/Tasks.org" "Caixa de Entrada") 
-	   "* IDEA %?\n %U\n %a\n %i" :empty-lines 1)))
+     '(("i" "Idea" entry
+        (file+olp "~/Repos/Notes/Tasks.org" "Caixa de Entrada") 
+	"* IDEA %?\n%U\n %a\n %i"
+        :empty-lines 1)
+       ("l" "Log" entry
+        (file+olp denote-journal-path-to-new-or-existing-entry "Logs")
+        "* %U %?\n%i\n%a"
+          :kill-buffer t
+          :empty-lines 1)))
     (org-agenda-files '("~/Repos/Notes/Tasks.org"))
     (org-log-into-drawer t)
     (org-log-done 'time)
