@@ -375,8 +375,14 @@
 (use-package citar
   :ensure t
   :custom
-  (citar-bibliography '("~/Repos/Notes/bib/references.bib" "~/Repos/Notes/bib/Paper2025a.bib"))
+  ((citar-bibliography (file-expand-wildcards "~/Repos/Notes/bib/*.bib"))
   (citar-open-always-create-notes nil)
+  ;; (org-cite-global-bibliography '("~/bib/references.bib"))
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar))
+  :bind
+  (:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
   :hook (org-mode . citar-capf-setup))
 
 (use-package citar-embark
@@ -384,6 +390,26 @@
  :after citar embark
  :no-require
  :config (citar-embark-mode))
+
+(use-package biblio)
+
+(use-package biblio-openlibrary
+  :vc (:url "https://github.com/fabcontigiani/biblio-openlibrary" :branch "master")
+  :after biblio)
+
+(use-package ebib
+  :ensure t
+  :custom (ebib-default-directory "~/Repos/Notes/bib/"))
+
+(use-package ebib-biblio
+  :ensure nil
+  :after (ebib biblio)
+  :bind (:map ebib-index-mode-map
+              ("B" . ebib-biblio-import-doi)
+              :map biblio-selection-mode-map
+              ("e" . ebib-biblio-selection-import)))
+
+
 
 (use-package citar-denote
   :ensure t
