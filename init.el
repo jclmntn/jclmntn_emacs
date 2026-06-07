@@ -601,7 +601,9 @@
                            ("https://www.nexojornal.com.br/rss.xml" news brazil)
                            ("https://www.counting-stuff.com/rss" blog stats)
                            ("https://blog.miguelgrinberg.com/feed" blog python)
-                           ("https://grouplens.org/feed/" blog computing)))))
+                           ("https://davidvujic.blogspot.com/feeds/posts/default" blog python agile)
+                           ("https://grouplens.org/feed/" blog computing)
+                           ("https://protesilaos.com/master.xml" blog philosophy emacs)))))
 
 (use-package engrave-faces)
 
