@@ -281,6 +281,9 @@
 
 (use-package cape)
 
+(use-package yasnippet-capf
+  :after cape)
+
 ;; to integrate yasnippet-capf with eglot completion
 ;; https://github.com/minad/corfu/wiki#making-a-cape-super-capf-for-eglot
 
