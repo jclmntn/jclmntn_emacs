@@ -1,5 +1,5 @@
-;; ;; -*- lexical-binding: t; -*-
-;; ;; Startup Configs 
+;; -*- lexical-binding: t; -*-
+;; Startup Configs 
 
 (use-package emacs
   :custom
@@ -15,17 +15,20 @@
    (ring-bell-function #'ignore)
    (ansi-color-for-compilation-mode t))
   :config
+  ;; Para não poluir a configuração com ensures desnecessários
+  (require 'use-package-ensure)
   ;; Inicia o Emacs com tela cheia
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
-
+  ;; Adiciona o MELPA à lista de pacotes possíveis
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
   ;; Carrega arquivo de configurações
   (load custom-file)
   (dolist (mode '(eshell-mode-hook dired-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
+  ;; Ajustes de codificação quando estiver usando Windows
   (pcase system-type
     (windows-nt
-     ;; Ajustes de codificação quando estiver usando Windows
      (prefer-coding-system 'utf-8)
      (set-default-coding-systems 'utf-8)
      (set-terminal-coding-system 'utf-8)
@@ -53,13 +56,8 @@
   ((dired-kill-when-opening-new-dired-buffer t)
    (dired-dwim-target t)))
 
-;; Adiciona o MELPA à lista de pacotes possíveis
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-
 ;; Deixando o Emacs mais bonito
 ;; Tema
-(use-package modus-themes)
 (load-theme 'modus-operandi)
 
 ;; ;; Fontes
@@ -76,37 +74,33 @@
 
 ;; Nerd Fonts
 (use-package nerd-icons
-  :ensure t
   :custom (nerd-icons-font-family "Symbols Nerd Font Mono"))
 
 (use-package nerd-icons-corfu
-  :ensure t
+  :after corfu
   :config (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 (use-package nerd-icons-dired
-  :ensure t
   :hook
   (dired-mode . nerd-icons-dired-mode))
 
 (use-package nerd-icons-completion
+  :after vertico
   :config
   (nerd-icons-completion-mode)
   (with-eval-after-load 'marginalia
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup)))
 
 (use-package nerd-icons-ibuffer
-  :ensure t
   :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 
 (use-package doom-modeline
-  :ensure t
   :init (doom-modeline-mode 1)
   :custom
   (doom-modeline-vcs-max-length 30))
 
 ;; Pulsar
 (use-package pulsar
-  :ensure t
   :bind
   ( :map global-map
     ("C-x l" . pulsar-pulse-line) ; overrides `count-lines-page'
@@ -119,11 +113,6 @@
   (setq pulsar-face 'pulsar-green)
   (setq pulsar-region-face 'pulsar-yellow)
   (setq pulsar-highlight-face 'pulsar-magenta))
-
-;; Para não precisar poluir o ambiente com :ensure t
-(use-package use-package
-  :custom
-  (use-package-always-ensure t))
 
 ;; Parênteses coloridos
 (use-package rainbow-delimiters
@@ -147,7 +136,6 @@
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
   (setq evil-want-C-i-jump t)
-  :ensure t
   :config
   (evil-mode 1)
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
@@ -178,7 +166,6 @@
 
 ;; Emacs EAT
 (use-package eat
-  :ensure t
   :config (eat-eshell-mode))
 
 ;; Árvore de undo
@@ -186,7 +173,6 @@
 
 ;; Definição de leader keys
 (use-package general
-  :ensure t
   :config
   (general-create-definer jclmntn/leader-keys
                           :keymaps '(normal insert visual emacs)
@@ -216,7 +202,6 @@
 
 ;; Configurando o Vertico e amigos
 (use-package vertico
-  :ensure t
   :bind (:map vertico-map
               ("C-j" . vertico-next)
               ("C-k" . vertico-previous)
@@ -232,18 +217,15 @@
 
 (use-package marginalia
   :after vertico
-  :ensure t
   :init
   (marginalia-mode))
 
 (use-package orderless
-  :ensure t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package consult
-  :ensure t
   :bind
   (("C-s" . consult-line)
    ("C-x b" . consult-buffer)))
@@ -254,7 +236,6 @@
 
 
 (use-package consult-notes
-  :ensure t
   :commands (consult-notes
              consult-notes-search-in-all-notes)
   :config
@@ -266,7 +247,6 @@
   (consult-notes-file-dir-sources '(("Denote" ?d "~/Repos/Notes/denote-notes/")))) 
 
 (use-package embark
-  :ensure t
   :bind (
          ("C-." . embark-act)
          ("M-." . embark-dwim)
@@ -284,14 +264,11 @@
   (add-to-list 'embark-target-injection-hooks (list #'jinx-correct #'embark--ignore-target)))
 
 (use-package embark-consult
-  :ensure t
   :hook (embark-collect-mode . consult-preview-at-point-mode))
 
-(use-package wgrep
-  :ensure t)
+(use-package wgrep)
 
 (use-package corfu
-  :ensure t
   :custom
   (corfu-cycle t)
   (corfu-auto-prefix 1)
@@ -302,8 +279,7 @@
             (lambda (fun &optional arg)
               (cape-wrap-noninterruptible (lambda () (funcall fun arg))))))
 
-(use-package cape
-  :ensure t)
+(use-package cape)
 
 ;; to integrate yasnippet-capf with eglot completion
 ;; https://github.com/minad/corfu/wiki#making-a-cape-super-capf-for-eglot
@@ -315,6 +291,7 @@
 	       (cape-capf-super
 		#'eglot-completion-at-point
 		#'yasnippet-capf))))
+
 
 (setq eglot-python/pyright-uvtool-command
       '("uv" "tool" "run" "--from" "pyright" "pyright-langserver" "--" "--stdio"))
@@ -331,7 +308,6 @@
   :hook (eglot-managed-mode . eldoc-box-hover-at-point-mode))
 
 (use-package flymake-ruff
-  :ensure t
   :hook (eglot-managed-mode . flymake-ruff-load))
 
 
@@ -353,7 +329,6 @@
                   (org-level-8 . 1.1)))
     (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
 
-  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
   (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
   (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
@@ -389,7 +364,6 @@
   :hook
   (org-mode . jclmntn/org-mode-setup)
   (org-babel-after-execute . jclmntn/babel-ansi)
-  :ensure t
   :custom 
   ((org-todo-keywords
     '((sequence "TODO(t!)" "PROJ(j)" "NEXT(n)" "IDEA(i)" "|" "DONE(d!)" "KILL(k!)")))
@@ -465,7 +439,6 @@
 
 ;; Personal Knowledge Management
 (use-package denote
-  :ensure t
   :hook (dired-mode . denote-dired-mode)
   :custom ((denote-templates '((journal . "* Logs"))))
   :config
@@ -473,8 +446,7 @@
   ;; Denote buffers automatically renamed to have prefix + title
   (denote-rename-buffer-mode 1))
 
-(use-package denote-sequence
-  :ensure t)
+(use-package denote-sequence)
 
 (use-package denote-journal
   :custom ((denote-journal-directory
@@ -482,7 +454,6 @@
            (denote-journal-title-format 'day-date-month-year)))
 
 (use-package citar
-  :ensure t
   :custom
   ((citar-bibliography (file-expand-wildcards "~/Repos/Notes/bib/*.bib"))
    (citar-open-always-create-notes nil)
@@ -493,7 +464,6 @@
   :hook (org-mode . citar-capf-setup))
 
 (use-package citar-embark
- :ensure t
  :after citar embark
  :no-require
  :config (citar-embark-mode))
@@ -505,7 +475,6 @@
   :after biblio)
 
 (use-package ebib
-  :ensure t
   :custom (ebib-default-directory "~/Repos/Notes/bib/"))
 
 (use-package ebib-biblio
@@ -516,10 +485,7 @@
               :map biblio-selection-mode-map
               ("e" . ebib-biblio-selection-import)))
 
-
-
 (use-package citar-denote
-  :ensure t
   :demand t ;; Ensure minor mode loads
   :after (:any citar denote)
   :custom
@@ -553,7 +519,6 @@
 (setq-default process-coding-system-alist (cons '("git" . (utf-8 . utf-8)) process-coding-system-alist))
 
 ;; Programming Modes
-
 (defun jclmntn-python-dynamic-shell-args (&rest _args)
   "Dynamically set python shell args based on pyproject.toml"
   (let ((pyproject-file (locate-dominating-file default-directory "pyproject.toml")))
@@ -569,7 +534,6 @@
         (message "Python args set to: %s" args)))))
 
 (use-package python
-  :ensure t
   :mode (("\\.py\\'" . python-ts-mode))
   :hook ((python-ts-mode . display-fill-column-indicator-mode)
          (python-ts-mode . jclmntn-python-dynamic-shell-args)
@@ -648,7 +612,6 @@
 (use-package just-mode)
 
 (use-package hl-todo
-  :ensure t
   :hook ((prog-mode . hl-todo-mode)
          (yaml-mode . hl-todo-mode))
   :config
@@ -711,7 +674,6 @@
   )
 
 (use-package ejc-sql
-  :ensure t
   :hook (ejc-sql-connected . jclmntn/ejc-sql-connected-hook)
   :custom
   (ejc-nrepl-timeout nil)
@@ -802,7 +764,6 @@
     (setq-local imenu-generic-expression '(("Dates" "\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\)" 1))))
 
 (use-package hledger-mode
-  :ensure t
   :mode "\\.journal\\'"
   :custom
   ((hledger-jfile "~/Repos/hlfinances/2026.journal") ;; Sempre atualizar para o mais recente.
